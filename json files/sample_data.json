@@ -1,0 +1,27 @@
+{
+    "categories": [
+      {"id": 1, "category_name": "Beverages"},
+      {"id": 2, "category_name": "Food"}
+    ],
+    "items": [
+      {
+        "id": 1,
+        "name": "Water",
+        "category": 1,
+        "details": [
+          {"detail_name": "volume", "detail_value": "1.5l"},
+          {"detail_name": "pack size", "detail_value": "6"}
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Orange juice",
+        "category": 1,
+        "details": [
+          {"detail_name": "volume", "detail_value": "250ml"},
+          {"detail_name": "pack size", "detail_value": "12"}
+        ]
+      }
+    ]
+  }
+  
