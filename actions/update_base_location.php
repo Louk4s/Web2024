@@ -16,31 +16,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("dd", $latitude, $longitude);
 
     if ($stmt->execute()) {
-        $message = "Base location updated successfully!";
+        $_SESSION['message'] = "Base location updated successfully!";
     } else {
-        $message = "Error: " . $stmt->error;
+        $_SESSION['message'] = "Error: " . $stmt->error;
     }
 
     $stmt->close();
     $conn->close();
-} else {
+
+    // Redirect back to admin_map.php with message
     header("Location: ../admin_map.php");
     exit();
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Base Location</title>
-    <link rel="stylesheet" href="../style/styles.css">
-</head>
-<body>
-<div class="container">
-    <h2><?php echo $message; ?></h2>
-    <a class="back-button" href="../dashboards/admin_dashboard.php">Back to Admin Dashboard</a>
-</div>
-</body>
-</html>

@@ -245,3 +245,11 @@ a:hover {
     background: #e8491d;
 }
 
+.custom-popup {
+    font-size: 12px; /* Smaller font size */
+    padding: 2px 5px; /* Adjust padding */
+    text-align: center; /* Center text */
+    max-width: 100px; /* Set max width to control the size */
+}
+
+
