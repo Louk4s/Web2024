@@ -64,7 +64,7 @@ $conn->close();
     </form>
 
     <!-- Κουμπί για επιστροφή στη σελίδα inventory -->
-    <a href="manage_inventory.php" class="back-button">Back to Inventory</a>
+    <a href="manage_inventory.php" class="back-button">Back to Manage Inventory</a>
 </div>
 </body>
 </html>

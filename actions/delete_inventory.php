@@ -51,7 +51,7 @@ $conn->close();
     <input type="hidden" id="message" value="<?php echo $message; ?>">
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
     <p> </p>
-    <a href="manage_inventory.php" class="back-button">Back to Manage Inventory Page</a>
+    <a href="manage_inventory.php" class="back-button">Back to Manage Inventory</a>
 
 </div>
 </body>
