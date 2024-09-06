@@ -1,7 +1,1 @@
-#Just because I have configured my personal computer with the mysql running in 
-# a different port and having a different password for authentication in contrast with my colleagues
-# I am (Kristian) using gitignore. 
-db_connect.php
-db_connect.php
-db_connect.php
-*.php
+
