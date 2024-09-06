@@ -10,18 +10,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $latitude = $_POST['latitude'];
     $longitude = $_POST['longitude'];
 
-    $stmt = $conn->prepare("INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssssd", $fullname, $phone, $username, $password, $role, $latitude, $longitude);
-
-    if ($stmt->execute()) {
-        header("Location: dashboards/citizen_dashboard.php");
-        exit();
+    // Έλεγχος αν το τηλέφωνο είναι έγκυρο
+    if (!preg_match("/^69[0-9]{8}$/", $phone)) {
+        $error = "Το τηλέφωνο πρέπει να ξεκινάει με 69 και να έχει 10 ψηφία.";
     } else {
-        $error = "Error: " . $stmt->error;
-    }
+        $stmt = $conn->prepare("INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssd", $fullname, $phone, $username, $password, $role, $latitude, $longitude);
 
-    $stmt->close();
-    $conn->close();
+        if ($stmt->execute()) {
+            header("Location: dashboards/citizen_dashboard.php");
+            exit();
+        } else {
+            $error = "Error: " . $stmt->error;
+        }
+
+        $stmt->close();
+        $conn->close();
+    }
 }
 ?>
 
@@ -45,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="text" id="fullname" name="fullname" required>
 
         <label for="phone">Phone:</label>
-        <input type="text" id="phone" name="phone" required>
+        <input type="text" id="phone" name="phone" pattern="69[0-9]{8}" title="Το τηλέφωνο πρέπει να ξεκινάει με 69 και να έχει 10 ψηφία" required>
 
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
@@ -65,3 +70,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 </body>
 </html>
+
