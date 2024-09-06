@@ -1,6 +1,7 @@
 <?php
 session_start();
-include 'db_connect.php';
+include 'db_connect.php';  // Βεβαιώσου ότι το αρχείο περιέχει την σωστή σύνδεση με τη βάση δεδομένων
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fullname = $_POST['fullname'];
     $phone = $_POST['phone'];
@@ -10,23 +11,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $latitude = $_POST['latitude'];
     $longitude = $_POST['longitude'];
 
-    // validation/checking of the phone --> should have been in an external file with a reference but its ok..
+    // validation/checking of the phone
     if (!preg_match("/^69[0-9]{8}$/", $phone)) {
         $error = "Το τηλέφωνο πρέπει να ξεκινάει με 69 και να έχει 10 ψηφία.";
     } else {
-        $stmt = $conn->prepare("INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssd", $fullname, $phone, $username, $password, $role, $latitude, $longitude);
+        // Έλεγχος αν το username υπάρχει ήδη
+        $check_username_query = "SELECT * FROM users WHERE username = ?";
+        $stmt = $conn->prepare($check_username_query);
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-        if ($stmt->execute()) {
-            header("Location: dashboards/citizen_dashboard.php");
-            exit();
+        if ($result->num_rows > 0) {
+            // Το username υπάρχει ήδη
+            $error = "Το username χρησιμοποιείται ήδη. Παρακαλώ διαλέξτε άλλο.";
         } else {
-            $error = "Error: " . $stmt->error;
+            // Το username είναι διαθέσιμο, προχωράμε με την εισαγωγή
+            $stmt = $conn->prepare("INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssssd", $fullname, $phone, $username, $password, $role, $latitude, $longitude);
+
+            if ($stmt->execute()) {
+                // Αν η εγγραφή ήταν επιτυχής, κάνουμε redirect στο dashboard
+                header("Location: dashboards/citizen_dashboard.php");
+                exit();
+            } else {
+                $error = "Error: " . $stmt->error;
+            }
         }
 
+        // Κλείσιμο των δηλώσεων
         $stmt->close();
-        $conn->close();
     }
+
+    // Κλείνουμε τη σύνδεση με τη βάση δεδομένων
+    $conn->close();
 }
 ?>
 
@@ -70,4 +88,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 </body>
 </html>
+
 

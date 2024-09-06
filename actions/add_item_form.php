@@ -14,12 +14,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $category_id = $_POST['category_id'];
     $quantity = $_POST['quantity'];
 
-    // Εισαγωγή νέου προϊόντος στη βάση δεδομένων
+    // Inserting a new product into the database
     $stmt = $conn->prepare("INSERT INTO items (name, category_id, quantity) VALUES (?, ?, ?)");
     $stmt->bind_param("sii", $item_name, $category_id, $quantity);
 
     if ($stmt->execute()) {
-        // Αποθήκευση μηνύματος επιτυχίας
+        // Save success message
         $success_message = "Item '$item_name' added successfully!";
     } else {
         $error = "Error adding item: " . $stmt->error;
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
 }
 
-// Ανάκτηση των κατηγοριών για το dropdown
+// Retrieval of categories for the dropdown
 $category_result = $conn->query("SELECT * FROM categories");
 $categories = $category_result->fetch_all(MYSQLI_ASSOC);
 
@@ -42,38 +42,18 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Item</title>
     <link rel="stylesheet" href="../style/styles.css">
-    <style>
-        .success-message {
-            color: green;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        .back-button {
-            display: inline-block;
-            background-color: #2c3e50;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        .back-button:hover {
-            background-color: #34495e;
-        }
-    </style>
+    
 </head>
 <body>
 <div class="container">
     <h2>Add New Item</h2>
 
-    <!-- Εμφάνιση μηνύματος επιτυχίας -->
+    <!-- Display of a success message -->
     <?php if ($success_message): ?>
         <div class="success-message"><?php echo $success_message; ?></div>
     <?php endif; ?>
 
-    <!-- Φόρμα προσθήκης προϊόντος -->
+    <!-- Add product form -->
     <form method="POST" action="">
         <label for="item_name">Item Name:</label>
         <input type="text" id="item_name" name="item_name" required><br>
@@ -91,7 +71,6 @@ $conn->close();
         <button type="submit">Add Item</button>
     </form>
 
-    <!-- Κουμπί για επιστροφή στο Inventory -->
     <a href="manage_inventory.php" class="back-button">Back to Manage Inventory</a>
 </div>
 </body>
