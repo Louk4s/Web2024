@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $latitude = $_POST['latitude'];
     $longitude = $_POST['longitude'];
 
-    // Έλεγχος αν το τηλέφωνο είναι έγκυρο
+    // validation/checking of the phone --> should have been in an external file with a reference but its ok..
     if (!preg_match("/^69[0-9]{8}$/", $phone)) {
         $error = "Το τηλέφωνο πρέπει να ξεκινάει με 69 και να έχει 10 ψηφία.";
     } else {

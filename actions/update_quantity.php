@@ -12,12 +12,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $quantity = $_POST['quantity'];
 
-    // Ενημέρωση της ποσότητας στη βάση δεδομένων
+    //Updating the quantity in the data base
     $stmt = $conn->prepare("UPDATE items SET quantity = ? WHERE id = ?");
     $stmt->bind_param("ii", $quantity, $id);
 
     if ($stmt->execute()) {
-        // Εμφάνιση μηνύματος επιτυχίας
+        // Message of Success
         $successMessage = "Successful update of the quantity.";
     } else {
         $error = "Error updating quantity: " . $stmt->error;
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $id = $_GET['id'];
 
-// Ανάκτηση των πληροφοριών του προϊόντος
+//Fetching the info of the item
 $item_result = $conn->query("SELECT * FROM items WHERE id = $id");
 $item = $item_result->fetch_assoc();
 
@@ -47,7 +47,7 @@ $conn->close();
 <div class="container">
     <h2>Update Quantity</h2>
 
-    <!-- Εμφάνιση μηνύματος επιτυχίας -->
+    <!-- Success Message -->
     <?php if ($successMessage): ?>
         <p class="success"><?php echo $successMessage; ?></p>
     <?php endif; ?>
@@ -63,7 +63,6 @@ $conn->close();
         <button type="submit">Update</button>
     </form>
 
-    <!-- Κουμπί για επιστροφή στη σελίδα inventory -->
     <a href="manage_inventory.php" class="back-button">Back to Manage Inventory</a>
 </div>
 </body>

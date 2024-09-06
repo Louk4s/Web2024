@@ -8,7 +8,7 @@ include '../db_connect.php';
 
 $message = "";
 
-// Ανάκτηση κατηγοριών για το dropdown
+// fetch categories for the dropdown
 $sql = "SELECT id, name FROM categories";
 $result = $conn->query($sql);
 $categories = $result->fetch_all(MYSQLI_ASSOC);
@@ -16,9 +16,9 @@ $categories = $result->fetch_all(MYSQLI_ASSOC);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $item_name = $_POST['item_name'];
     $category_id = $_POST['category_id'];
-    $quantity = $_POST['quantity'];  // Λήψη της ποσότητας
+    $quantity = $_POST['quantity'];  //quantity
 
-    // Εισαγωγή του προϊόντος με όνομα, κατηγορία και ποσότητα
+    //Insertion of an item with name category and quantity?
     $sql = "INSERT INTO items (name, category_id, quantity) VALUES (?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sii", $item_name, $category_id, $quantity);
@@ -63,7 +63,7 @@ $conn->close();
         </select><br>
 
         <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity" required><br> <!-- Νέο πεδίο για την ποσότητα -->
+        <input type="number" id="quantity" name="quantity" required><br> <!--Quantity field -->
 
         <button type="submit">Add Item</button>
     </form>

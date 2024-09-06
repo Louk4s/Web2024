@@ -7,21 +7,21 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 
 include '../db_connect.php';
 
-// Έλεγχος για μήνυμα επιτυχίας
+// Success Message
 $success_message = '';
 if (isset($_SESSION['success_message'])) {
     $success_message = $_SESSION['success_message'];
-    unset($_SESSION['success_message']); // Καθαρισμός του μηνύματος μετά την εμφάνισή του
+    unset($_SESSION['success_message']); // The message clears after its appearance 
 }
 
-// Ανάκτηση όλων των κατηγοριών για το dropdown
+// Fetch categories for the dropdown
 $categories_result = $conn->query("SELECT id, category_name FROM categories");
 $categories = [];
 while ($row = $categories_result->fetch_assoc()) {
     $categories[] = $row;
 }
 
-// Έλεγχος αν έχει επιλεγεί κατηγορία
+// check if the category is fetched
 $selected_category_id = isset($_GET['category_id']) ? $_GET['category_id'] : null;
 
 // Ανάκτηση των προϊόντων με βάση την επιλεγμένη κατηγορία
@@ -57,12 +57,11 @@ $conn->close();
 <div class="container">
     <h2>Manage Inventory</h2>
 
-    <!-- Εμφάνιση μηνύματος επιτυχίας -->
+    <!-- Success Message -->
     <?php if ($success_message): ?>
         <div class="success-message"><?php echo $success_message; ?></div>
     <?php endif; ?>
 
-    <!-- Κουμπί για προσθήκη νέου προϊόντος -->
     <a href="add_item_form.php"><button>Add New Item</button></a>
 
     <!-- Dropdown για επιλογή κατηγορίας -->
@@ -70,7 +69,7 @@ $conn->close();
         <label for="category_id">Select Category:</label>
         <select name="category_id" id="category_id" onchange="this.form.submit()">
             <option value="">All Categories</option>
-            <!-- Προεπιλογή για όλες τις κατηγορίες -->
+            <!-- Default for all categories -->
             <?php foreach ($categories as $category): ?>
                 <option value="<?php echo $category['id']; ?>" <?php if ($category['id'] == $selected_category_id) echo 'selected'; ?>>
                     <?php echo $category['category_name']; ?>
@@ -79,7 +78,7 @@ $conn->close();
         </select>
     </form>
 
-    <!-- Πίνακας με τα προϊόντα -->
+    <!-- Table with the items -->
     <table>
         <tr>
             <th>ID</th>
