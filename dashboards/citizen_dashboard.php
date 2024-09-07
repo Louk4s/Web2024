@@ -18,7 +18,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
 <div class="container">
     <h2>Welcome, <?php echo $_SESSION['username']; ?> (Citizen)</h2>
     <ul>
-        <li><a href="#">Request Assistance</a></li>
+        <li><a href="../actions/add_request.php">Request Assistance</a></li>
         <li><a href="#">Offer Help</a></li>
         <!-- Add other citizen-specific functionalities here -->
     </ul>
