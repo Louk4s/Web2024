@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST" action="create_announcement.php">
-        <label for="items">Select Items:</label>
+        <label for="items">Select Items(Press Ctrl for more than 2):</label>
         <select name="items[]" id="items" multiple="multiple" style="width: 100%;">
             <?php foreach ($items as $item): ?>
                 <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>

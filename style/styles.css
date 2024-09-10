@@ -275,4 +275,14 @@ a:hover {
     max-width: 100px; /* Set max width to control the size */
 }
 
+/* CSS to style the multiple select box */
+select[multiple] {
+    height: auto;
+    min-height: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #fff;
+}
 
