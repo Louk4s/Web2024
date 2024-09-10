@@ -14,9 +14,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
+        // Επαλήθευση του κωδικού πρόσβασης
         if (password_verify($password, $user['password'])) {
+            // Αποθήκευση του user_id στη συνεδρία
+            $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
+            // Ανακατεύθυνση στον πίνακα ελέγχου
             header("Location: dashboards/dashboard.php");
             exit();
         } else {
@@ -58,4 +62,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 </body>
 </html>
+
 
