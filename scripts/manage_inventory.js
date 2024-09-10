@@ -5,3 +5,8 @@ $(document).ready(function() {
         allowClear: true                   // Επιτρέπει την εκκαθάριση των επιλογών
     });
 });
+
+// JavaScript to scroll to the top
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}

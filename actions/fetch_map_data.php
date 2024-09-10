@@ -12,8 +12,8 @@ $baseQuery = "SELECT * FROM base WHERE id = 1";
 $baseResult = $conn->query($baseQuery);
 $base = $baseResult->fetch_assoc();
 
-// Fetch rescuers' locations
-$rescuerQuery = "SELECT fullname, latitude, longitude FROM rescuers";
+// Fetch rescuers' locations from users table where role = rescuer
+$rescuerQuery = "SELECT fullname, latitude, longitude FROM users WHERE role = 'rescuer'";
 $rescuerResult = $conn->query($rescuerQuery);
 $rescuers = array();
 
@@ -29,3 +29,4 @@ echo json_encode([
 
 $conn->close();
 ?>
+

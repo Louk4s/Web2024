@@ -220,21 +220,32 @@ a:hover {
     color: #ffffff;
 }
 
-
-.back-button {
-    margin-top: 50px; /* Add space above the button */
-    display: inline-block;
-    background: #35424a;
-    color: #ffffff;
-    padding: 10px 20px;
-    text-decoration: none;
-    cursor: pointer;
+/* Style for Back to Top button */
+.back-to-top {
+    background-color: #4CAF50; /* Green background */
+    color: white;
     border: none;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 10px 0;
 }
 
-.back-button:hover {
-    background: #e8491d;
+.back-to-top:hover {
+    background-color: #45a049; /* Darker green when hovered */
+    color: #fff; /* Ensure white text is visible */
 }
+
+/* Style for Back to Admin Dashboard button */
+.back-button {
+    background-color: #e74c3c; /* Red background */
+    color: white;
+    padding: 10px 20px;
+    text-decor
+
 
 .add-button {
     display: inline-block;
@@ -258,3 +269,4 @@ a:hover {
 }
 
 
+}

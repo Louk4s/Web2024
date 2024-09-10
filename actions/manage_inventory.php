@@ -43,12 +43,14 @@ if (!empty($selected_category_ids)) {
     $items_result = $conn->query("SELECT items.id, items.name, items.quantity, categories.category_name 
                                   FROM items 
                                   JOIN categories ON items.category_id = categories.id 
-                                  WHERE items.category_id IN ($selected_category_ids_sql)");
+                                  WHERE items.category_id IN ($selected_category_ids_sql)
+                                  ORDER BY items.id DESC"); // Changed to DESC
 } else {
     // Show all items if no category is selected
     $items_result = $conn->query("SELECT items.id, items.name, items.quantity, categories.category_name 
                                   FROM items 
-                                  JOIN categories ON items.category_id = categories.id");
+                                  JOIN categories ON items.category_id = categories.id 
+                                  ORDER BY items.id DESC"); // Changed to DESC
 }
 
 if ($items_result && $items_result->num_rows > 0) {
@@ -57,6 +59,17 @@ if ($items_result && $items_result->num_rows > 0) {
     }
 } else {
     echo "No items found or error fetching items: " . $conn->error;
+}
+
+// Fetch details for each item
+$item_details = [];
+$details_result = $conn->query("SELECT item_id, detail_name, detail_value FROM item_details");
+if ($details_result && $details_result->num_rows > 0) {
+    while ($detail_row = $details_result->fetch_assoc()) {
+        $item_details[$detail_row['item_id']][] = $detail_row;
+    }
+} else {
+    echo "Error fetching item details: " . $conn->error;
 }
 
 $conn->close();
@@ -81,12 +94,17 @@ $conn->close();
 
     <!-- Success Message -->
     <?php if ($success_message): ?>
-        <div class="success-message"><?php echo $success_message; ?></div>
+        <div class="success-message"><?php echo $success_message; ?></div> <!-- Styled message from CSS -->
     <?php endif; ?>
 
     <a href="add_item_form.php"><button>Add New Item</button></a>
 
-    <!-- Dropdown για επιλογή πολλαπλών κατηγοριών -->
+    <!-- Update Inventory Button -->
+    <form action="../actions/update_inventory.php" method="POST">
+        <button type="submit" class="update-button">Update Inventory</button>
+    </form>
+
+    <!-- Dropdown for selecting multiple categories -->
     <form method="GET" action="manage_inventory.php">
         <label for="category_id">Select Categories:</label>
         <select name="category_id[]" id="category_id" multiple="multiple" style="width: 100%;">
@@ -107,6 +125,7 @@ $conn->close();
             <th>Name</th>
             <th>Category</th>
             <th>Quantity</th>
+            <th>Details</th> <!-- New column for item details -->
             <th>Actions</th>
         </tr>
         <?php if (count($items) > 0): ?>
@@ -117,6 +136,15 @@ $conn->close();
                     <td><?php echo $item['category_name']; ?></td>
                     <td><?php echo $item['quantity']; ?></td>
                     <td>
+                        <?php if (isset($item_details[$item['id']])): ?>
+                            <?php foreach ($item_details[$item['id']] as $detail): ?>
+                                <?php echo $detail['detail_name'] . ': ' . $detail['detail_value'] . '<br>'; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            N/A
+                        <?php endif; ?>
+                    </td> <!-- Display details -->
+                    <td>
                         <a href="edit_inventory.php?id=<?php echo $item['id']; ?>">Edit</a>
                         <a href="delete_inventory.php?id=<?php echo $item['id']; ?>">Delete</a>
                         <a href="update_quantity.php?id=<?php echo $item['id']; ?>">Update Quantity</a>
@@ -125,31 +153,27 @@ $conn->close();
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="5">No items found in this category.</td>
+                <td colspan="6">No items found in this category.</td>
             </tr>
         <?php endif; ?>
     </table>
+
+    <!-- Back to Top Button -->
+    <button onclick="scrollToTop()" class="back-button">Back to Top</button>
+
+    <!-- Back to Admin Dashboard Button -->
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 </div>
 
-<!-- jQuery (απαραίτητο για το Select2) -->
+<!-- jQuery for Select2 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- Custom JS για το manage_inventory -->
+<!-- Custom JS for manage_inventory -->
 <script src="../scripts/manage_inventory.js"></script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
 
