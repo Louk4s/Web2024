@@ -7,20 +7,12 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
 
 include '../db_connect.php';
 
-// Fetch categories and items for the dropdowns
+// Fetch categories for the dropdown
 $categories_result = $conn->query("SELECT id, category_name FROM categories");
 $categories = [];
 if ($categories_result && $categories_result->num_rows > 0) {
     while ($row = $categories_result->fetch_assoc()) {
         $categories[] = $row;
-    }
-}
-
-$items_result = $conn->query("SELECT id, name FROM items");
-$items = [];
-if ($items_result && $items_result->num_rows > 0) {
-    while ($row = $items_result->fetch_assoc()) {
-        $items[] = $row;
     }
 }
 
@@ -44,6 +36,20 @@ $conn->close();
 <div class="container">
     <h2>Request Assistance</h2>
 
+    <!-- Εμφάνιση μηνύματος επιτυχίας αν υπάρχει -->
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="message">
+            <?php echo $_SESSION['success_message']; ?>
+        </div>
+        <?php unset($_SESSION['success_message']); // Αφαίρεση του μηνύματος μετά την εμφάνιση ?>
+        <script>
+            // Αυτόματη ανακατεύθυνση μετά από 3 δευτερόλεπτα
+            setTimeout(function() {
+                window.location.href = '../dashboards/citizen_dashboard.php';
+            }, 3000);
+        </script>
+    <?php endif; ?>
+
     <!-- Form to create a new request -->
     <form action="../actions/add_request_action.php" method="POST">
         <div class="form-group">
@@ -60,9 +66,7 @@ $conn->close();
             <label for="item_id">Select Item:</label>
             <select name="item_id" id="item_id" class="form-control" style="width: 100%;">
                 <option value="">-- Select Item --</option>
-                <?php foreach ($items as $item): ?>
-                    <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>
-                <?php endforeach; ?>
+                <!-- Τα items θα φορτωθούν δυναμικά από την JavaScript -->
             </select>
         </div>
 
@@ -88,4 +92,5 @@ $conn->close();
 <script src="../scripts/request_assistance.js"></script>
 </body>
 </html>
+
 
