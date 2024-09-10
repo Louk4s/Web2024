@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         var marker = L.marker([rescuer.latitude, rescuer.longitude], {
                             icon: L.icon({
                                 iconUrl: '../icons/rescuer-icon.png',
-                                iconSize: [20, 20],
+                                iconSize: [30, 30],
                                 iconAnchor: [10, 20],
                                 popupAnchor: [0, -20]
                             })

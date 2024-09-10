@@ -50,23 +50,35 @@ foreach ($items as $item) {
         // Item exists, update it
         $update_query = "UPDATE items SET quantity = quantity + $quantity WHERE name = '$name' AND category_id = $category_id";
         $conn->query($update_query);
+        $item_id = $check_result->fetch_assoc()['id'];
     } else {
         // Item does not exist, insert it
         $insert_query = "INSERT INTO items (name, category_id, quantity) VALUES ('$name', $category_id, $quantity)";
         $conn->query($insert_query);
+        $item_id = $conn->insert_id; // Get the ID of the newly inserted item
     }
 
-    // Insert item details if present
+    // Insert or update item details if present
     if (isset($item['details']) && is_array($item['details'])) {
         foreach ($item['details'] as $detail) {
             $detail_name = $detail['detail_name'];
             $detail_value = $detail['detail_value'];
 
-            // Insert each detail for the item
-            $insert_detail_query = "INSERT INTO item_details (item_id, detail_name, detail_value) 
-                                    VALUES ((SELECT id FROM items WHERE name = '$name' AND category_id = $category_id), 
-                                    '$detail_name', '$detail_value')";
-            $conn->query($insert_detail_query);
+            // Check if the detail already exists for this item
+            $check_detail_query = "SELECT id FROM item_details WHERE item_id = $item_id AND detail_name = '$detail_name'";
+            $check_detail_result = $conn->query($check_detail_query);
+
+            if ($check_detail_result && $check_detail_result->num_rows > 0) {
+                // If detail exists, update it
+                $update_detail_query = "UPDATE item_details SET detail_value = '$detail_value' 
+                                        WHERE item_id = $item_id AND detail_name = '$detail_name'";
+                $conn->query($update_detail_query);
+            } else {
+                // If detail does not exist, insert it
+                $insert_detail_query = "INSERT INTO item_details (item_id, detail_name, detail_value) 
+                                        VALUES ($item_id, '$detail_name', '$detail_value')";
+                $conn->query($insert_detail_query);
+            }
         }
     }
 }
@@ -76,4 +88,3 @@ header("Location: manage_inventory.php");
 
 $conn->close();
 ?>
-

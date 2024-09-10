@@ -239,13 +239,20 @@ a:hover {
     color: #fff; /* Ensure white text is visible */
 }
 
-/* Style for Back to Admin Dashboard button */
 .back-button {
     background-color: #e74c3c; /* Red background */
     color: white;
     padding: 10px 20px;
-    text-decor
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 30px; /* Add some space above the button */
+    display: inline-block;
+    font-size: 16px;
+}
 
+.back-button:hover {
+    background-color: #d62c1a; /* Darker red when hovered */
+}
 
 .add-button {
     display: inline-block;
@@ -269,4 +276,3 @@ a:hover {
 }
 
 
-}
