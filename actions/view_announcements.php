@@ -39,9 +39,7 @@ if ($announcements_result && $announcements_result->num_rows > 0) {
             'items' => implode(', ', $item_names) // Join item names into a comma-separated string
         ];
     }
-} else {
-    echo "No announcements found.";
-}
+} 
 
 $conn->close();
 ?>

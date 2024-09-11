@@ -37,9 +37,7 @@ if ($announcements_result && $announcements_result->num_rows > 0) {
             'items' => implode(', ', $item_names) // Join item names into a comma-separated string
         ];
     }
-} else {
-    echo "No announcements found.";
-}
+} 
 
 $conn->close();
 ?>
@@ -65,16 +63,16 @@ $conn->close();
                 <th>Items</th>
                 <th>Description</th>
                 <th>Created At</th>
-                <th>Actions</th> <!-- Added for the Offer button -->
+                <th>Actions</th>
             </tr>
             <?php foreach ($announcements as $announcement): ?>
-                <tr>
+                <tr id="announcement-row-<?php echo $announcement['id']; ?>">
                     <td><?php echo htmlspecialchars($announcement['items']); ?></td>
                     <td><?php echo htmlspecialchars($announcement['description']); ?></td>
                     <td><?php echo htmlspecialchars($announcement['created_at']); ?></td>
                     <td>
-                        <!-- Offer Button -->
-                        <a href="offer_form.php?announcement_id=<?php echo $announcement['id']; ?>" class="button">Delete</a>
+                        <!-- Delete Button -->
+                        <button class="delete-button button" data-id="<?php echo $announcement['id']; ?>">Delete</button>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -83,9 +81,11 @@ $conn->close();
         <p>No announcements to display.</p>
     <?php endif; ?>
 
-    <!-- Back to Citizen Dashboard Button -->
+    <!-- Back to Admin Dashboard Button -->
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
-
 </div>
+
+<!-- Include JavaScript -->
+<script src="../scripts/announcements.js"></script>
 </body>
 </html>
