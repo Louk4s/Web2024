@@ -7,9 +7,9 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
 
 include '../db_connect.php';
 
-// Fetch offers made by the citizen
+// Fetch offers made by the citizen with 'created_at'
 $user_id = $_SESSION['user_id'];
-$offers_result = $conn->query("SELECT id, item_ids, status FROM offers WHERE user_id = $user_id ORDER BY id DESC");
+$offers_result = $conn->query("SELECT id, item_ids, status, created_at FROM offers WHERE user_id = $user_id ORDER BY id DESC");
 
 $offers = [];
 if ($offers_result && $offers_result->num_rows > 0) {
@@ -31,7 +31,8 @@ if ($offers_result && $offers_result->num_rows > 0) {
         $offers[] = [
             'id' => $row['id'],
             'items' => implode(', ', $item_names),
-            'status' => $row['status']
+            'status' => $row['status'],
+            'created_at' => $row['created_at'] // Add created_at
         ];
     }
 }
@@ -71,12 +72,14 @@ $conn->close();
             <tr>
                 <th>Items</th>
                 <th>Status</th>
+                <th>Created At</th> <!-- Add new column -->
                 <th>Actions</th>
             </tr>
             <?php foreach ($offers as $offer): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($offer['items']); ?></td>
                     <td><?php echo htmlspecialchars($offer['status']); ?></td>
+                    <td><?php echo htmlspecialchars($offer['created_at']); ?></td> <!-- Display the created_at value -->
                     <td>
                         <?php if ($offer['status'] == 'pending'): ?>
                             <a href="view_offers.php?cancel_offer_id=<?php echo $offer['id']; ?>" class="button">Cancel</a>

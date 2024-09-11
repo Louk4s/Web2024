@@ -19,22 +19,16 @@ if ($announcement_id) {
     }
 }
 
-// Fetch all items and categories from the inventory
-$categories_result = $conn->query("SELECT id, category_name FROM categories");
-$items_result = $conn->query("SELECT items.id, items.name, items.category_id FROM items");
+// Fetch details for the selected items
+if (!empty($selected_items)) {
+    $item_ids_sql = implode(',', array_map('intval', $selected_items));
+    $items_result = $conn->query("SELECT id, name FROM items WHERE id IN ($item_ids_sql)");
+    $items = [];
 
-$categories = [];
-$items = [];
-
-if ($categories_result && $categories_result->num_rows > 0) {
-    while ($row = $categories_result->fetch_assoc()) {
-        $categories[] = $row;
-    }
-}
-
-if ($items_result && $items_result->num_rows > 0) {
-    while ($row = $items_result->fetch_assoc()) {
-        $items[] = $row;
+    if ($items_result && $items_result->num_rows > 0) {
+        while ($row = $items_result->fetch_assoc()) {
+            $items[] = $row;
+        }
     }
 }
 
@@ -72,9 +66,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Offer</title>
     <link rel="stylesheet" href="../style/styles.css">
-
-    <!-- jQuery and jQuery UI for autocomplete -->
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    
 </head>
 <body>
 <div class="container">
@@ -90,39 +82,34 @@ $conn->close();
     <?php endif; ?>
 
     <form method="POST" action="offer_form.php?announcement_id=<?php echo $announcement_id; ?>">
-        <!-- Category Selection -->
-        <label for="category">Select Category:</label>
-        <input type="text" id="category" name="category" placeholder="Search Category" 
-               data-categories='<?php echo json_encode($categories); ?>'>
-
-        <!-- Item Selection -->
-        <label for="items">Select Item:</label>
-        <input type="text" id="items_search" placeholder="Search Item">
-        <select name="items[]" id="items" multiple="multiple" style="width: 100%;" 
-                data-items='<?php echo json_encode($items); ?>'>
-            <?php foreach ($items as $item): ?>
-                <option value="<?php echo $item['id']; ?>" <?php echo in_array($item['id'], $selected_items) ? 'selected' : ''; ?>>
-                    <?php echo $item['name']; ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-
-        <!-- Quantity Input -->
-        <label for="quantities[]">Select Quantity:</label>
-        <input type="number" name="quantities[]" min="1" placeholder="Enter Quantity">
+        <!-- Item Selection with Quantity Input -->
+        <label for="items">Select Items and Quantities:</label>
+        <table class="scrollable-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th class="item-quantity">Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($items as $item): ?>
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="items[]" value="<?php echo $item['id']; ?>" checked>
+                            <?php echo $item['name']; ?>
+                        </td>
+                        <td class="item-quantity">
+                            <input type="number" name="quantities[]" min="1" placeholder="Quantity" style="width: 60px;">
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
         <button type="submit">Submit Offer</button>
     </form>
 
     <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Dashboard</a>
 </div>
-
-<!-- jQuery and jQuery UI -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
-<!-- Custom JS for the offer form -->
-<script src="../scripts/offer_form.js"></script>
 </body>
 </html>
-

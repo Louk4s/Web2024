@@ -45,8 +45,6 @@ $requests_result = $conn->query($requests_query);
             <th>Item</th>
             <th>Quantity</th>
             <th>Status</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
             <th>Date</th>
         </tr>
         <?php if ($requests_result && $requests_result->num_rows > 0): ?>
@@ -55,8 +53,7 @@ $requests_result = $conn->query($requests_query);
                     <td><?php echo $row['item_name']; ?></td>
                     <td><?php echo $row['quantity']; ?></td>
                     <td><?php echo $row['status']; ?></td>
-                    <td><?php echo $row['latitude']; ?></td>
-                    <td><?php echo $row['longitude']; ?></td>
+                    
                     <td><?php echo $row['created_at']; ?></td>
                 </tr>
             <?php endwhile; ?>
