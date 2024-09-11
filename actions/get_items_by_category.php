@@ -1,12 +1,19 @@
 <?php
 include '../db_connect.php'; // Σιγουρέψου ότι η διαδρομή του αρχείου σύνδεσης είναι σωστή
 
-if (isset($_GET['category_id'])) {
-    $category_id = intval($_GET['category_id']); // Ασφαλής μετατροπή του category_id σε ακέραιο
+if (isset($_GET['category_ids'])) {
+    $category_ids = $_GET['category_ids']; // Αποκτάμε τα IDs των κατηγοριών ως string
 
-    if ($category_id > 0) {
-        // Ερώτημα για την ανάκτηση των items που ανήκουν στην κατηγορία
-        $items_result = $conn->query("SELECT id, name FROM items WHERE category_id = $category_id");
+    // Ασφαλής μετατροπή σε ακέραιους και διαχωρισμός των IDs
+    $category_ids_array = array_map('intval', explode(',', $category_ids));
+
+    if (!empty($category_ids_array)) {
+        // Ερώτημα για την ανάκτηση των items που ανήκουν στις κατηγορίες
+        $placeholders = implode(',', array_fill(0, count($category_ids_array), '?'));
+        $stmt = $conn->prepare("SELECT id, name FROM items WHERE category_id IN ($placeholders)");
+        $stmt->bind_param(str_repeat('i', count($category_ids_array)), ...$category_ids_array);
+        $stmt->execute();
+        $items_result = $stmt->get_result();
 
         if ($items_result && $items_result->num_rows > 0) {
             $items = [];
@@ -20,15 +27,16 @@ if (isset($_GET['category_id'])) {
             echo json_encode([]);
         }
     } else {
-        // Μη έγκυρη κατηγορία
+        // Μη έγκυρες κατηγορίες
         http_response_code(400);
-        echo json_encode(["error" => "Invalid category ID"]);
+        echo json_encode(["error" => "Invalid category IDs"]);
     }
 } else {
-    // Δεν παρέχεται category_id στο αίτημα
+    // Δεν παρέχονται category_ids στο αίτημα
     http_response_code(400);
-    echo json_encode(["error" => "Missing category ID"]);
+    echo json_encode(["error" => "Missing category IDs"]);
 }
 
 $conn->close();
 ?>
+

@@ -7,12 +7,12 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 
 include '../db_connect.php';
 
-// Fetch all items from the inventory
-$items_result = $conn->query("SELECT id, name FROM items");
-$items = [];
-if ($items_result && $items_result->num_rows > 0) {
-    while ($row = $items_result->fetch_assoc()) {
-        $items[] = $row;
+// Fetch all categories from the database
+$categories_result = $conn->query("SELECT id, category_name FROM categories");
+$categories = [];
+if ($categories_result && $categories_result->num_rows > 0) {
+    while ($row = $categories_result->fetch_assoc()) {
+        $categories[] = $row;
     }
 }
 
@@ -33,6 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Please select items and provide a description.";
     }
 }
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -57,11 +60,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST" action="create_announcement.php">
-        <label for="items">Select Items(Press Ctrl for more than 2):</label>
-        <select name="items[]" id="items" multiple="multiple" style="width: 100%;">
-            <?php foreach ($items as $item): ?>
-                <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>
+        <!-- Τροποποίηση για πολλαπλή επιλογή κατηγοριών -->
+        <label for="category">Select Categories (Press Ctrl to select multiple):</label>
+        <select id="category" name="categories[]" multiple="multiple" style="width: 100%;">
+            <?php foreach ($categories as $category): ?>
+                <option value="<?php echo $category['id']; ?>"><?php echo $category['category_name']; ?></option>
             <?php endforeach; ?>
+        </select>
+
+        <!-- Τα items θα φορτώνονται δυναμικά με βάση τις επιλεγμένες κατηγορίες -->
+        <label for="items">Select Items (Press Ctrl to select multiple):</label>
+        <select name="items[]" id="items" multiple="multiple" style="width: 100%;" disabled>
+            <option value="">Select an Item</option>
         </select>
 
         <label for="description">Announcement Description:</label>
@@ -72,8 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 </div>
-
+<link rel="stylesheet" href="../style/styles.css">
 <!-- Custom JS for form interaction -->
-<script src="../scripts/announcement.js"></script>
+<script src="../scripts/announcements.js"></script>
 </body>
 </html>
