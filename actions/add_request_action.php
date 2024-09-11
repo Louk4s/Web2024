@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
@@ -10,11 +9,10 @@ include '../db_connect.php';
 
 // Validate form inputs
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id = ''; // This will be fetched based on the session username
     $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
     $people_count = isset($_POST['people_count']) ? intval($_POST['people_count']) : 0;
 
-    // Fetch the user ID, latitude, and longitude based on the username in the session
+    // Fetch the user location based on the session username
     $username = $_SESSION['username'];
     $user_query = "SELECT id, latitude, longitude FROM users WHERE username = '$username' AND role = 'citizen'";
     $user_result = $conn->query($user_query);
@@ -29,18 +27,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Insert the new request into the database
-    $status = 'Pending'; // Default status for new requests
+    $status = 'pending'; // Default status for new requests
 
     if ($item_id && $people_count > 0) {
         $insert_query = "INSERT INTO requests (user_id, item_id, quantity, status, latitude, longitude) 
                          VALUES ('$user_id', '$item_id', '$people_count', '$status', '$latitude', '$longitude')";
-
         if ($conn->query($insert_query) === TRUE) {
-            $request_id = $conn->insert_id; // Get the request ID
-            $insert_task_query = "INSERT INTO tasks (user_id, task_type, related_id, status, latitude, longitude) 
-                                  VALUES ('$user_id', 'request', '$request_id', 'pending', '$latitude', '$longitude')";
-            $conn->query($insert_task_query);
-            $_SESSION['success_message'] = "Request submitted successfully!";
+            $request_id = $conn->insert_id;
+
+            // Now insert a task for this request
+            $task_type = 'request';
+            $task_stmt = $conn->prepare("INSERT INTO tasks (task_type, request_id, status, created_at, latitude, longitude) VALUES (?, ?, 'pending', NOW(), ?, ?)");
+            $task_stmt->bind_param('siss', $task_type, $request_id, $latitude, $longitude);
+            $task_stmt->execute();
+
+            $_SESSION['success_message'] = "Request submitted successfully and task added!";
             header("Location: ../dashboards/citizen_dashboard.php");
         } else {
             echo "Error: " . $insert_query . "<br>" . $conn->error;

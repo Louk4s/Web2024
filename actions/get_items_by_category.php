@@ -1,17 +1,13 @@
 <?php
-include '../db_connect.php'; // Σιγουρέψου ότι η διαδρομή του αρχείου σύνδεσης είναι σωστή
+include '../db_connect.php'; // Ensure the connection file path is correct
 
-if (isset($_GET['category_ids'])) {
-    $category_ids = $_GET['category_ids']; // Αποκτάμε τα IDs των κατηγοριών ως string
+if (isset($_GET['category_id'])) {
+    $category_id = intval($_GET['category_id']); // Get the single category ID
 
-    // Ασφαλής μετατροπή σε ακέραιους και διαχωρισμός των IDs
-    $category_ids_array = array_map('intval', explode(',', $category_ids));
-
-    if (!empty($category_ids_array)) {
-        // Ερώτημα για την ανάκτηση των items που ανήκουν στις κατηγορίες
-        $placeholders = implode(',', array_fill(0, count($category_ids_array), '?'));
-        $stmt = $conn->prepare("SELECT id, name FROM items WHERE category_id IN ($placeholders)");
-        $stmt->bind_param(str_repeat('i', count($category_ids_array)), ...$category_ids_array);
+    if ($category_id > 0) {
+        // Query to fetch items that belong to the given category
+        $stmt = $conn->prepare("SELECT id, name FROM items WHERE category_id = ?");
+        $stmt->bind_param('i', $category_id);
         $stmt->execute();
         $items_result = $stmt->get_result();
 
@@ -20,23 +16,22 @@ if (isset($_GET['category_ids'])) {
             while ($row = $items_result->fetch_assoc()) {
                 $items[] = $row;
             }
-            // Επιστροφή των items σε μορφή JSON
+            // Return the items in JSON format
             echo json_encode($items);
         } else {
-            // Δεν βρέθηκαν items
+            // No items found
             echo json_encode([]);
         }
     } else {
-        // Μη έγκυρες κατηγορίες
+        // Invalid category ID
         http_response_code(400);
-        echo json_encode(["error" => "Invalid category IDs"]);
+        echo json_encode(["error" => "Invalid category ID"]);
     }
 } else {
-    // Δεν παρέχονται category_ids στο αίτημα
+    // No category_id parameter in the request
     http_response_code(400);
-    echo json_encode(["error" => "Missing category IDs"]);
+    echo json_encode(["error" => "Missing category ID"]);
 }
 
 $conn->close();
 ?>
-

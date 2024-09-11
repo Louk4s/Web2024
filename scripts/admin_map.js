@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 var baseLat = data.base.latitude;
                 var baseLng = data.base.longitude;
                 var rescuers = data.rescuers;
-                var tasks = data.tasks;
+                var tasks = data.tasks; // Added tasks
 
                 // Initialize the map
                 var map = L.map('map').setView([baseLat, baseLng], 13);
@@ -45,25 +45,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 });
 
-                // Loop through the tasks and add them to the map
+                // Add task markers (offers and requests)
                 tasks.forEach(function(task) {
-                    let markerIcon = task.task_type === 'offer' ? 'offer-icon.png' : 'request-icon.png';
-                    let marker = L.marker([task.latitude, task.longitude], {
+                    var iconUrl = task.task_type === 'offer' ? '../icons/offer-icon.png' : '../icons/request-icon.png';
+
+                    var marker = L.marker([task.latitude, task.longitude], {
                         icon: L.icon({
-                            iconUrl: '../icons/' + markerIcon,
+                            iconUrl: iconUrl,
                             iconSize: [30, 30],
                             iconAnchor: [10, 20],
                             popupAnchor: [0, -20]
                         })
                     }).addTo(map);
-
-                    marker.bindPopup(task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1) + 
-                                     ' Task: ID ' + task.related_id + '<br>Status: ' + task.status);
+                    marker.bindPopup(task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1) + ' Task - Status: ' + task.status);
                 });
             })
             .catch(error => console.error('Error fetching map data:', error));
     });
 });
-
-
-

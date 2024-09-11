@@ -20,10 +20,10 @@ if ($announcement_id) {
 }
 
 // Fetch details for the selected items
+$items = [];
 if (!empty($selected_items)) {
     $item_ids_sql = implode(',', array_map('intval', $selected_items));
     $items_result = $conn->query("SELECT id, name FROM items WHERE id IN ($item_ids_sql)");
-    $items = [];
 
     if ($items_result && $items_result->num_rows > 0) {
         while ($row = $items_result->fetch_assoc()) {
@@ -45,14 +45,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $items_and_quantities[] = $item_id . ':' . intval($quantities[$index]); // Store item_id:quantity
         }
         $item_ids = implode(',', $items_and_quantities);
-        $stmt = $conn->prepare("INSERT INTO offers (user_id, item_ids, status) VALUES (?, ?, ?)");
-        $stmt->bind_param('iss', $user_id, $item_ids, $status);
+
+        // Fetch user geolocation from user table
+        $latitude = '';
+        $longitude = '';
+        $user_query = $conn->query("SELECT latitude, longitude FROM users WHERE id = $user_id");
+        if ($user_query && $user_query->num_rows > 0) {
+            $user_row = $user_query->fetch_assoc();
+            $latitude = $user_row['latitude'];
+            $longitude = $user_row['longitude'];
+        }
+
+        // Insert offer into the offers table
+        $stmt = $conn->prepare("INSERT INTO offers (user_id, item_ids, status, latitude, longitude) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param('issss', $user_id, $item_ids, $status, $latitude, $longitude);
         $stmt->execute();
 
+        // Now insert the task into the tasks table
         $offer_id = $stmt->insert_id; // Get the offer ID
-        $insert_task_query = "INSERT INTO tasks (user_id, task_type, related_id, status) 
-                              VALUES ('$user_id', 'offer', '$offer_id', 'pending')";
-        $conn->query($insert_task_query);
+        $task_type = 'offer';
+        $task_status = 'pending';
+        $created_at = date('Y-m-d H:i:s');
+        $task_stmt = $conn->prepare("INSERT INTO tasks (task_type, offer_id, status, latitude, longitude, created_at) VALUES (?, ?, ?, ?, ?, ?)");
+        $task_stmt->bind_param('sissss', $task_type, $offer_id, $task_status, $latitude, $longitude, $created_at);
+        $task_stmt->execute();
 
         $_SESSION['success_message'] = 'Offer successfully created.';
         header("Location: offer_form.php?announcement_id=$announcement_id");
@@ -65,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $conn->close();
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,7 +89,6 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Offer</title>
     <link rel="stylesheet" href="../style/styles.css">
-    
 </head>
 <body>
 <div class="container">
@@ -98,17 +114,21 @@ $conn->close();
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($items as $item): ?>
-                    <tr>
-                        <td>
-                            <input type="checkbox" name="items[]" value="<?php echo $item['id']; ?>" checked>
-                            <?php echo $item['name']; ?>
-                        </td>
-                        <td class="item-quantity">
-                            <input type="number" name="quantities[]" min="1" placeholder="Quantity" style="width: 60px;">
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
+                <?php if (!empty($items)): ?>
+                    <?php foreach ($items as $item): ?>
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="items[]" value="<?php echo $item['id']; ?>" checked>
+                                <?php echo $item['name']; ?>
+                            </td>
+                            <td class="item-quantity">
+                                <input type="number" name="quantities[]" min="1" placeholder="Quantity" style="width: 60px;">
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="2">No items available for this announcement.</td></tr>
+                <?php endif; ?>
             </tbody>
         </table>
 
