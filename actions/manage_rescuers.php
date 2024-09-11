@@ -6,7 +6,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 }
 include '../db_connect.php';
 
-$rescuers_result = $conn->query("SELECT * FROM users WHERE role = 'rescuer'");
+$rescuers_result = $conn->query("SELECT id, fullname, phone, username FROM users WHERE role = 'rescuer'");
 $rescuers = [];
 while ($row = $rescuers_result->fetch_assoc()) {
     $rescuers[] = $row;

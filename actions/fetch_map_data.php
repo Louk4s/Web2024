@@ -21,12 +21,24 @@ while ($row = $rescuerResult->fetch_assoc()) {
     $rescuers[] = $row;
 }
 
-// Return the data in JSON format
+// Fetch tasks from the database
+$tasksQuery = "SELECT * FROM tasks";
+$tasksResult = $conn->query($tasksQuery);
+$tasks = array();
+
+while ($row = $tasksResult->fetch_assoc()) {
+    $tasks[] = $row;
+}
+
+// Return base, rescuers, and tasks
 echo json_encode([
     'base' => $base,
-    'rescuers' => $rescuers
+    'rescuers' => $rescuers,
+    'tasks' => $tasks
 ]);
 
 $conn->close();
 ?>
+
+
 

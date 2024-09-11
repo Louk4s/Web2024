@@ -4,6 +4,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     header("Location: ../login.php");
     exit();
 }
+
 include '../db_connect.php';
 
 // Check if 'id' is provided in the URL
@@ -17,14 +18,19 @@ $message = "";
 
 // If the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id = $_POST['id'];
-    $fullname = $_POST['fullname'];
-    $phone = $_POST['phone'];
-    $username = $_POST['username'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $fullname = isset($_POST['fullname']) ? $_POST['fullname'] : '';
+    $phone = isset($_POST['phone']) ? $_POST['phone'] : '';
+    $password = isset($_POST['password']) && !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
 
-    $stmt = $conn->prepare("UPDATE users SET fullname = ?, phone = ?, username = ?, password = ? WHERE id = ?");
-    $stmt->bind_param("ssssi", $fullname, $phone, $username, $password, $id);
+    if ($password) {
+        // If password is provided, update with password
+        $stmt = $conn->prepare("UPDATE users SET fullname = ?, phone = ?, password = ? WHERE id = ?");
+        $stmt->bind_param("sssi", $fullname, $phone, $password, $id);
+    } else {
+        // If password is not provided, update without password
+        $stmt = $conn->prepare("UPDATE users SET fullname = ?, phone = ? WHERE id = ?");
+        $stmt->bind_param("ssi", $fullname, $phone, $id);
+    }
 
     if ($stmt->execute()) {
         $message = "Rescuer updated successfully!";
@@ -45,6 +51,7 @@ $stmt->close();
 $conn->close();
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,25 +63,24 @@ $conn->close();
 <body>
 <div class="container">
     <h2>Edit Rescuer</h2>
-    <?php if ($message): ?>
+
+    <?php if (!empty($message)): ?>
         <div class="message"><?php echo $message; ?></div>
     <?php endif; ?>
-    <form action="edit_rescuer.php?id=<?php echo $id; ?>" method="post">
-        <input type="hidden" name="id" value="<?php echo $rescuer['id']; ?>">
-        <label for="fullname">Full Name:</label>
-        <input type="text" id="fullname" name="fullname" value="<?php echo $rescuer['fullname']; ?>" required><br>
-        
+
+    <form method="POST" action="edit_rescuer.php?id=<?php echo $id; ?>">
+        <label for="fullname">Name:</label>
+        <input type="text" id="fullname" name="fullname" value="<?php echo htmlspecialchars($rescuer['fullname']); ?>" required>
+
         <label for="phone">Phone:</label>
-        <input type="text" id="phone" name="phone" value="<?php echo $rescuer['phone']; ?>" required><br>
-        
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" value="<?php echo $rescuer['username']; ?>" required><br>
-        
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br>
-        
+        <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($rescuer['phone']); ?>" required>
+
+        <label for="password">Password (leave blank if you don't want to change it):</label>
+        <input type="password" id="password" name="password" placeholder="Enter new password (optional)">
+
         <button type="submit">Update Rescuer</button>
     </form>
+
     <a href="manage_rescuers.php" class="back-button">Back to Manage Rescuers</a>
 </div>
 </body>

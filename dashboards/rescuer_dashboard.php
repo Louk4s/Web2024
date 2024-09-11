@@ -17,12 +17,17 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'rescuer') {
 <body>
 <div class="container">
     <h2>Welcome, <?php echo $_SESSION['username']; ?> (Rescuer)</h2>
+
     <ul>
-        <li><a href="../actions/view_tasks.php">View Tasks</a></li>
-        <li><a href="update_task_status.php">Update Task Status</a></li>
-        <li><a href="../rescuer_map.php">View Map</a></li> <!-- New View Map link -->
-        <li><a href="../logout.php">Logout</a></li>
+        <li><a href="../actions/view_tasks.php">View Assigned Tasks</a></li>
+        <li><a href="../actions/view_map.php">View Map</a></li>
+        <li><a href="../actions/update_task_status.php">Update Task Status</a></li>
+        <li><a href="../actions/view_announcements.php">View Announcements</a></li>
+        <li><a href="../actions/view_offers.php">View Offers</a></li>
     </ul>
+
+    <a href="../logout.php">Logout</a>
 </div>
 </body>
 </html>
+

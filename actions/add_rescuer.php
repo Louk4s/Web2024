@@ -17,17 +17,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $latitude = $_POST['latitude'];
     $longitude = $_POST['longitude'];
 
-    $sql = "INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) VALUES (?, ?, ?, ?, 'rescuer', ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssssdd", $fullname, $phone, $username, $password, $latitude, $longitude);
+    // Check if the username already exists
+    $check_username = $conn->prepare("SELECT id FROM users WHERE username = ?");
+    $check_username->bind_param("s", $username);
+    $check_username->execute();
+    $check_username->store_result();
 
-    if ($stmt->execute()) {
-        $message = "Rescuer added successfully!";
+    if ($check_username->num_rows > 0) {
+        $message = "Error: The username '$username' is already taken. Please choose a different username.";
     } else {
-        $message = "Error: " . $stmt->error;
+        // Insert rescuer into users table
+        $sql = "INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) VALUES (?, ?, ?, ?, 'rescuer', ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ssssdd", $fullname, $phone, $username, $password, $latitude, $longitude);
+
+        if ($stmt->execute()) {
+            $message = "Rescuer added successfully!";
+        } else {
+            $message = "Error: " . $stmt->error;
+        }
+
+        $stmt->close();
     }
 
-    $stmt->close();
+    $check_username->close();
 }
 
 $conn->close();
@@ -41,7 +54,7 @@ $conn->close();
     <title>Add Rescuer</title>
     <link rel="stylesheet" href="../style/styles.css">
 </head>
-<body onload="getLocation()">
+<body>
 <div class="container">
     <h2>Add Rescuer</h2>
     <?php if ($message): ?>
@@ -68,11 +81,8 @@ $conn->close();
 
         <button type="submit">Add Rescuer</button>
     </form>
-    <a href="manage_rescuers.php">Back to Manage Rescuers</a>
-    <a href="admin_dashboard.php">Back to Admin Dashboard</a>
+    <a href="../actions/manage_rescuers.php" class="back-button">Back to Manage Rescuers</a>
+    <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 </div>
-
-<!-- Link to the external JavaScript file -->
-<script src="../scripts/location.js"></script>
 </body>
 </html>

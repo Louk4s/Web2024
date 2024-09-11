@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
@@ -35,6 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          VALUES ('$user_id', '$item_id', '$people_count', '$status', '$latitude', '$longitude')";
 
         if ($conn->query($insert_query) === TRUE) {
+            $request_id = $conn->insert_id; // Get the request ID
+            $insert_task_query = "INSERT INTO tasks (user_id, task_type, related_id, status, latitude, longitude) 
+                                  VALUES ('$user_id', 'request', '$request_id', 'pending', '$latitude', '$longitude')";
+            $conn->query($insert_task_query);
             $_SESSION['success_message'] = "Request submitted successfully!";
             header("Location: ../dashboards/citizen_dashboard.php");
         } else {

@@ -10,9 +10,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 var baseLat = data.base.latitude;
                 var baseLng = data.base.longitude;
                 var rescuers = data.rescuers;
-
-                // Log the rescuers data for debugging
-                console.log('Rescuers:', rescuers);
+                var tasks = data.tasks;
 
                 // Initialize the map
                 var map = L.map('map').setView([baseLat, baseLng], 13);
@@ -34,9 +32,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 // Add rescuers to the map
                 rescuers.forEach(function(rescuer) {
-                    // Log each rescuer's data
-                    console.log('Adding rescuer:', rescuer);
-                    
                     if (rescuer.latitude && rescuer.longitude) {  // Ensure valid coordinates
                         var marker = L.marker([rescuer.latitude, rescuer.longitude], {
                             icon: L.icon({
@@ -49,9 +44,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         marker.bindPopup('Rescuer: ' + rescuer.fullname);
                     }
                 });
+
+                // Loop through the tasks and add them to the map
+                tasks.forEach(function(task) {
+                    let markerIcon = task.task_type === 'offer' ? 'offer-icon.png' : 'request-icon.png';
+                    let marker = L.marker([task.latitude, task.longitude], {
+                        icon: L.icon({
+                            iconUrl: '../icons/' + markerIcon,
+                            iconSize: [30, 30],
+                            iconAnchor: [10, 20],
+                            popupAnchor: [0, -20]
+                        })
+                    }).addTo(map);
+
+                    marker.bindPopup(task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1) + 
+                                     ' Task: ID ' + task.related_id + '<br>Status: ' + task.status);
+                });
             })
             .catch(error => console.error('Error fetching map data:', error));
     });
 });
+
 
 

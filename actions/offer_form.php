@@ -48,6 +48,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("INSERT INTO offers (user_id, item_ids, status) VALUES (?, ?, ?)");
         $stmt->bind_param('iss', $user_id, $item_ids, $status);
         $stmt->execute();
+
+        $offer_id = $stmt->insert_id; // Get the offer ID
+        $insert_task_query = "INSERT INTO tasks (user_id, task_type, related_id, status) 
+                              VALUES ('$user_id', 'offer', '$offer_id', 'pending')";
+        $conn->query($insert_task_query);
+
         $_SESSION['success_message'] = 'Offer successfully created.';
         header("Location: offer_form.php?announcement_id=$announcement_id");
         exit();
