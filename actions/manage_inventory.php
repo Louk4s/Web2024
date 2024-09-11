@@ -61,12 +61,19 @@ if ($items_result && $items_result->num_rows > 0) {
     echo "No items found or error fetching items: " . $conn->error;
 }
 
-// Fetch details for each item
+// Fetch details for each item and concatenate them, ensuring that only distinct values are retrieved
 $item_details = [];
-$details_result = $conn->query("SELECT item_id, detail_name, detail_value FROM item_details");
+$details_query = "
+    SELECT item_id, 
+           GROUP_CONCAT(DISTINCT CONCAT(detail_name, ': ', detail_value) SEPARATOR ', ') AS item_details
+    FROM item_details
+    GROUP BY item_id";
+
+$details_result = $conn->query($details_query);
+
 if ($details_result && $details_result->num_rows > 0) {
     while ($detail_row = $details_result->fetch_assoc()) {
-        $item_details[$detail_row['item_id']][] = $detail_row;
+        $item_details[$detail_row['item_id']] = $detail_row['item_details'];
     }
 } else {
     echo "Error fetching item details: " . $conn->error;
@@ -136,14 +143,8 @@ $conn->close();
                     <td><?php echo $item['category_name']; ?></td>
                     <td><?php echo $item['quantity']; ?></td>
                     <td>
-                        <?php if (isset($item_details[$item['id']])): ?>
-                            <?php foreach ($item_details[$item['id']] as $detail): ?>
-                                <?php echo $detail['detail_name'] . ': ' . $detail['detail_value'] . '<br>'; ?>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            N/A
-                        <?php endif; ?>
-                    </td> <!-- Display details -->
+                        <?php echo isset($item_details[$item['id']]) ? $item_details[$item['id']] : 'N/A'; ?>
+                    </td> <!-- Display concatenated details -->
                     <td>
                         <a href="edit_inventory.php?id=<?php echo $item['id']; ?>">Edit</a>
                         <a href="delete_inventory.php?id=<?php echo $item['id']; ?>">Delete</a>
@@ -176,4 +177,3 @@ $conn->close();
 
 </body>
 </html>
-

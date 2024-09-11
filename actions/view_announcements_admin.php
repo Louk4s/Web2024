@@ -1,8 +1,6 @@
 <?php
 session_start();
-
-// Ensure only logged-in citizens can view this page
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
+if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     header("Location: ../login.php");
     exit();
 }
@@ -76,7 +74,7 @@ $conn->close();
                     <td><?php echo htmlspecialchars($announcement['created_at']); ?></td>
                     <td>
                         <!-- Offer Button -->
-                        <a href="offer_form.php?announcement_id=<?php echo $announcement['id']; ?>" class="button">Offer</a>
+                        <a href="offer_form.php?announcement_id=<?php echo $announcement['id']; ?>" class="button">Delete</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -86,7 +84,7 @@ $conn->close();
     <?php endif; ?>
 
     <!-- Back to Citizen Dashboard Button -->
-    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a>
+    <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 
 </div>
 </body>

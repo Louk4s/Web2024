@@ -21,9 +21,12 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
         <li><a href="../actions/request_assistance.php">Request Assistance</a></li>
         <li><a href="../actions/view_request.php">View my Requests</a></li>
         <li><a href="../actions/view_announcements.php">View Announcements</a></li>
+        <li><a href="../actions/view_offers.php">View My Offers</a></li>
 
     </ul>
     <a href="../logout.php">Logout</a>
 </div>
 </body>
 </html>
+
+

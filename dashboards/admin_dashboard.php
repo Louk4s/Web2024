@@ -28,6 +28,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
         <li><a href="javascript:void(0)" id="viewMapBtn">View Map</a></li>
         <li><a href="../admin_map.php">Set Base Location</a></li>
         <li><a href="../actions/create_announcement.php">Create Announcements</a></li>
+        <li><a href="../actions/view_announcements_admin.php">View Announcements</a></li>
     </ul>
     
     <a href="../logout.php">Logout</a>
