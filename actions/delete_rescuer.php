@@ -42,7 +42,13 @@ $conn->close();
 <div class="container">
     <h2>Delete Rescuer</h2>
     <div class="message"><?php echo $message; ?></div>
+
+    <!-- Back to Rescuers Page -->
+    <a href="manage_rescuers.php" class="back-button">Back to Manage Rescuers</a>
+    <!-- Back to Admin Dashboard Button -->
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
+
+    
 </div>
 </body>
 </html>

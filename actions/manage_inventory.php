@@ -97,6 +97,11 @@ $conn->close();
 </head>
 <body>
 <div class="container">
+
+    <!-- Back to Admin Dashboard Button  -->
+    <div class="button-container">
+    <a href="../dashboards/admin_dashboard.php" class="back-button back-to-dashboard-top">Back to Admin Dashboard</a>
+    </div>
     <h2>Manage Inventory</h2>
 
     <!-- Success Message -->

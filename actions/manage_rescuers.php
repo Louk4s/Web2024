@@ -47,7 +47,10 @@ $conn->close();
             </tr>
         <?php endforeach; ?>
     </table>
+    <!-- Back to Admin Dashboard Button -->
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
+
+   
 </div>
 </body>
 </html>

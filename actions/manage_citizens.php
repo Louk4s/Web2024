@@ -24,7 +24,7 @@ $conn->close();
 </head>
 <body>
 <div class="container">
-    <h2>Manage Citizens</h2>
+    <h2>Citizens</h2>
     <table>
         <tr>
             <th>ID</th>

@@ -68,7 +68,7 @@ $conn->close();
         <div class="message"><?php echo $message; ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="edit_rescuer.php?id=<?php echo $id; ?>">
+    <form method="POST" action="edit_rescuer.php?id=<?php echo $id; ?>" onsubmit="return validateEditRescuerForm();">
         <label for="fullname">Name:</label>
         <input type="text" id="fullname" name="fullname" value="<?php echo htmlspecialchars($rescuer['fullname']); ?>" required>
 
@@ -78,10 +78,14 @@ $conn->close();
         <label for="password">Password (leave blank if you don't want to change it):</label>
         <input type="password" id="password" name="password" placeholder="Enter new password (optional)">
 
-        <button type="submit">Update Rescuer</button>
+        <button type="submit">Edit Rescuer</button>
     </form>
 
     <a href="manage_rescuers.php" class="back-button">Back to Manage Rescuers</a>
+    
+    <!-- Back to Admin Dashboard Button -->
+    <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 </div>
+<script src="../scripts/validation.js"></script>
 </body>
 </html>

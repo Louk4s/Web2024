@@ -357,3 +357,23 @@ select[multiple] {
     text-align: right;
 }
 
+.back-to-dashboard-top {
+    display: inline-block;
+    background-color: #e74c3c; /* Red background similar to the button at the bottom */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    margin-bottom: 20px; /* Adds space below the button */
+    text-align: center;
+}
+
+.back-to-dashboard-top:hover {
+    background-color: #c0392b; /* Slightly darker on hover */
+}
+.button-container {
+    text-align: center; /* Center the button horizontally */
+    margin-bottom: 20px; /* Adds space below the container */
+}
