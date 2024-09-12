@@ -7,7 +7,8 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 
 include '../db_connect.php';
 
-$message = "";
+$message = ""; // To store the success or error message
+$message_class = ""; // To assign the CSS class (for error or success messages)
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fullname = $_POST['fullname'];
@@ -24,17 +25,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $check_username->store_result();
 
     if ($check_username->num_rows > 0) {
-        $message = "Error: The username '$username' is already taken. Please choose a different username.";
+        // If username exists, show an error
+        $message = " The username '$username' is already taken. Please choose a different username.";
+        $message_class = "error-message"; // Set error class for styling
     } else {
-        // Insert rescuer into users table
-        $sql = "INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) VALUES (?, ?, ?, ?, 'rescuer', ?, ?)";
+        // Insert the new rescuer
+        $sql = "INSERT INTO users (fullname, phone, username, password, role, latitude, longitude) 
+                VALUES (?, ?, ?, ?, 'rescuer', ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssssdd", $fullname, $phone, $username, $password, $latitude, $longitude);
 
         if ($stmt->execute()) {
+            // Success message
             $message = "Rescuer added successfully!";
+            $message_class = "message"; // Set success class for styling
         } else {
+            // Error in insertion
             $message = "Error: " . $stmt->error;
+            $message_class = "error-message"; // Set error class for styling
         }
 
         $stmt->close();
@@ -58,9 +66,9 @@ $conn->close();
 <div class="container">
     <h2>Add Rescuer</h2>
     <?php if ($message): ?>
-        <div class="message"><?php echo $message; ?></div>
+        <div class="<?php echo $message_class; ?>"><?php echo $message; ?></div>
     <?php endif; ?>
-    <form action="add_rescuer.php" method="post">
+    <form id="addRescuerForm" action="add_rescuer.php" method="post" onsubmit="return validateRescuerForm();">
         <label for="fullname">Full Name:</label>
         <input type="text" id="fullname" name="fullname" required><br>
         
@@ -68,10 +76,11 @@ $conn->close();
         <input type="text" id="phone" name="phone" required><br>
         
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br>
+        <input type="text" id="username" name="username" required autocomplete="off"><br>
         
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br>
+        <!-- Use "new-password" to ensure browsers do not autofill saved passwords -->
+        <input type="password" id="password" name="password" required autocomplete="new-password"><br>
         
         <label for="latitude">Latitude:</label>
         <input type="number" step="any" id="latitude" name="latitude" required><br>
@@ -84,5 +93,7 @@ $conn->close();
     <a href="../actions/manage_rescuers.php" class="back-button">Back to Manage Rescuers</a>
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 </div>
+<script src="../scripts/validation.js"></script>
+<script src="../scripts/validation.js"></script>
 </body>
 </html>
