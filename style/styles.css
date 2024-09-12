@@ -76,10 +76,44 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-form label {
-    display: block;
+/* Updated layout for form fields */
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: column;
+    align-items: center;
+}
+
+.form-group label {
+    width: 100px;
+    text-align: right;
+    margin-right: 10px;
+}
+
+.form-group.button-container {
+    display: flex;
+    justify-content: center;
+    text-align: center;  
+    margin-top: 15px;
+}
+
+.form-group input {
+    width: 200px;
     margin-bottom: 10px;
-    font-weight: bold;
+}
+
+.form-group button {
+    background: #35424a;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    margin: 20px 0;
+}
+form button:hover {
+    background: #e8491d;
 }
 
 form input[type="text"],
@@ -100,6 +134,7 @@ form button {
     text-decoration: none;
     cursor: pointer;
     border: none;
+    
 }
 
 form button:hover {
@@ -285,6 +320,7 @@ select[multiple] {
     font-size: 16px;
     background-color: #fff;
 }
+
 /* The Modal (background) */
 .modal {
     display: none; /* Hidden by default */
@@ -298,25 +334,26 @@ select[multiple] {
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-
-
-
 .scrollable-table {
-        max-height: 300px;
-        overflow-y: auto;
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .scrollable-table th, .scrollable-table td {
-        padding: 10px;
-        border: 1px solid #ccc;
-        text-align: left;
-        color: black; /* Set the text color to black for cells */
-    }
-    .scrollable-table th {
-        background-color: #f2f2f2;
-        color: black !important; /* Force the text color to be black for the header */
-    }
-    .item-quantity {
-        text-align: right;
-    }
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.scrollable-table th, .scrollable-table td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+    color: black; /* Set the text color to black for cells */
+}
+
+.scrollable-table th {
+    background-color: #f2f2f2;
+    color: black !important; /* Force the text color to be black for the header */
+}
+
+.item-quantity {
+    text-align: right;
+}
+

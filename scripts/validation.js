@@ -8,16 +8,16 @@ function validateForm() {
 
     // Βασική επιβεβαίωση για τα πεδία
     if (!fullname || !phone || !username || !password || !latitude || !longitude) {
-        alert('All the filds are mandatory');
+        alert('All the filds are mandatory.');
         return false;
     }
 
     // Επιβεβαίωση αν ο αριθμός τηλεφώνου έχει το σωστό format
     if (!/^69[0-9]{8}$/.test(phone)) {
-        alert('The phone number must start with 69 and must have 10 digits');
+        alert('The phone number must start with 69 and must have 10 digits.');
         return false;
     }
-
+    
     // Έλεγχος για το username μέσω AJAX
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'register.php', true);  // Χρησιμοποιούμε το ίδιο register.php για τον έλεγχο
