@@ -1,9 +1,26 @@
-<?php
+<?php 
 session_start();
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'rescuer') {
     header("Location: ../login.php");
     exit();
 }
+
+include '../db_connect.php';
+
+// Fetch Base Location (ID = 1)
+$base_query = "SELECT * FROM base WHERE id = 1";
+$base_result = $conn->query($base_query);
+
+if ($base_result && $base_result->num_rows > 0) {
+    $base = $base_result->fetch_assoc();
+    $latitude = $base['latitude'];
+    $longitude = $base['longitude'];
+} else {
+    $latitude = 'N/A';
+    $longitude = 'N/A';
+}
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -19,14 +36,18 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'rescuer') {
     <h2>Welcome, <?php echo $_SESSION['username']; ?> (Rescuer)</h2>
 
     <ul>
-        <li><a href="../actions/view_tasks.php">View Assigned Tasks</a></li>
+        <li><a href="../actions/manage_inventory_rescuer.php">Manage Inventory</a></li>
         <li><a href="../actions/view_map.php">View Map</a></li>
-        <li><a href="../actions/update_task_status.php">Update Task Status</a></li>
-        <li><a href="../actions/view_announcements.php">View Announcements</a></li>
+        <li><a href="../actions/view_tasks.php">View Assigned Tasks</a></li>
+        <li><a href="../actions/view_trucks_inventory.php">View Truck's Inventory</a></li>
         <li><a href="../actions/view_offers.php">View Offers</a></li>
     </ul>
 
-    <a href="../logout.php">Logout</a>
+    <!-- Base Location Information -->
+    <!-- <p>Base Location: Latitude: <?php echo $latitude; ?>, Longitude: <?php echo $longitude; ?></p>  -->
+
+    <!-- Logout Button -->
+    <a href="../logout.php" class="logout-button">Logout</a>
 </div>
 </body>
 </html>

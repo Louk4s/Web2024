@@ -12,12 +12,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $quantity = $_POST['quantity'];
 
-    //Updating the quantity in the data base
+    // Updating the quantity in the database
     $stmt = $conn->prepare("UPDATE items SET quantity = ? WHERE id = ?");
     $stmt->bind_param("ii", $quantity, $id);
 
     if ($stmt->execute()) {
-        // Message of Success
         $successMessage = "Successful update of the quantity.";
     } else {
         $error = "Error updating quantity: " . $stmt->error;
@@ -28,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $id = $_GET['id'];
 
-//Fetching the info of the item
+// Fetching the info of the item
 $item_result = $conn->query("SELECT * FROM items WHERE id = $id");
 $item = $item_result->fetch_assoc();
 
@@ -45,7 +44,7 @@ $conn->close();
 </head>
 <body>
 <div class="container">
-    <h2>Update Quantity</h2>
+    <h2>Update Quantity for: <?php echo $item['name']; ?></h2> <!-- Display item name -->
 
     <!-- Success Message -->
     <?php if ($successMessage): ?>
@@ -67,4 +66,3 @@ $conn->close();
 </div>
 </body>
 </html>
-
