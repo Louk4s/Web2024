@@ -37,17 +37,17 @@ $conn->close();
 
     <ul>
         <li><a href="../actions/manage_inventory_rescuer.php">Manage Inventory</a></li>
-        <li><a href="../actions/view_map.php">View Map</a></li>
-        <li><a href="../actions/view_tasks.php">View Assigned Tasks</a></li>
         <li><a href="../actions/view_trucks_inventory.php">View Truck's Inventory</a></li>
-        <li><a href="../actions/view_offers.php">View Offers</a></li>
+        <li><a href="../actions/view_assigned_tasks.php">View Assigned Tasks</a></li>
+        <li><a href="../actions/view_completed_tasks.php">View Completed Tasks</a></li>
+      
     </ul>
 
     <!-- Base Location Information -->
     <!-- <p>Base Location: Latitude: <?php echo $latitude; ?>, Longitude: <?php echo $longitude; ?></p>  -->
 
     <!-- Logout Button -->
-    <a href="../logout.php" class="logout-button">Logout</a>
+    <a href="../logout.php" class="back-button">Logout</a>
 </div>
 </body>
 </html>

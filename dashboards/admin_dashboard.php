@@ -17,7 +17,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 </head>
 <body>
 <div class="container">
-    <h2>Admin Dashboard</h2>
+<h2>Welcome, <?php echo $_SESSION['username']; ?> (Admin)</h2>
     
     <!-- Admin menu -->
     <ul>
@@ -33,7 +33,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 
     </ul>
     
-    <a href="../logout.php">Logout</a>
+    <a href="../logout.php" class="back-button">Logout</a>
 
     <!-- Map container (Initially hidden) -->
     <div id="mapContainer" style="display: none; margin-top: 20px;">

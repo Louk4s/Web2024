@@ -62,7 +62,7 @@ $conn->close();
     </form>
 
     <!-- Unload Items -->
-    <h3>Unload Items in the Base Storage</h3>
+    <h3>Unload Items in the Truck</h3>
     <form action="../actions/unload_items.php" method="POST">
         <select name="unload_item_id[]" multiple="multiple">
             <?php if (!empty($inventory_items)): ?>

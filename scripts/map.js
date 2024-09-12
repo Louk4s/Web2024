@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Add rescuers to the map
     rescuers.forEach(function(rescuer) {
-        var marker = L.marker([rescuer.latitude, rescuer.longitude], {icon: L.icon({iconUrl: '../icons/rescuer-icon.png'})});
+        var marker = L.marker([rescuer.latitude, rescuer.longitude], {icon: L.icon({iconUrl: '../icons/rescuer_icon.png'})});
         marker.bindPopup('Rescuer: ' + rescuer.fullname);
         rescuerLayer.addLayer(marker);
     });

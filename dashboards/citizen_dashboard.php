@@ -24,7 +24,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
         <li><a href="../actions/view_offers.php">View My Offers</a></li>
 
     </ul>
-    <a href="../logout.php">Logout</a>
+    <a href="../logout.php" class="back-button">Logout</a>
 </div>
 </body>
 </html>

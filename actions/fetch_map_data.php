@@ -1,6 +1,8 @@
 <?php
 session_start();
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
+
+// Check if user is logged in and authorized (either admin or rescuer can access this)
+if (!isset($_SESSION['username']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'rescuer')) {
     header("HTTP/1.1 403 Forbidden");
     exit();
 }
@@ -8,7 +10,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 include('../db_connect.php');
 
 // Fetch base location
-$baseQuery = "SELECT * FROM base WHERE id = 1";
+$baseQuery = "SELECT latitude, longitude FROM base WHERE id = 1";
 $baseResult = $conn->query($baseQuery);
 $base = $baseResult->fetch_assoc();
 
@@ -22,7 +24,11 @@ while ($row = $rescuerResult->fetch_assoc()) {
 }
 
 // Fetch tasks from the tasks table
-$tasksQuery = "SELECT task_id, task_type, latitude, longitude, status FROM tasks WHERE status = 'pending'";
+$tasksQuery = "
+    SELECT task_id, task_type, latitude, longitude, status, rescuer_id 
+    FROM tasks 
+    WHERE status != 'completed'
+";
 $tasksResult = $conn->query($tasksQuery);
 $tasks = array();
 

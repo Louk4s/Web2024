@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     if (rescuer.latitude && rescuer.longitude) {  // Ensure valid coordinates
                         var marker = L.marker([rescuer.latitude, rescuer.longitude], {
                             icon: L.icon({
-                                iconUrl: '../icons/rescuer-icon.png',
+                                iconUrl: '../icons/rescuer_icon.png',
                                 iconSize: [30, 30],
                                 iconAnchor: [10, 20],
                                 popupAnchor: [0, -20]
