@@ -8,13 +8,13 @@ function validateForm() {
 
     // Βασική επιβεβαίωση για τα πεδία
     if (!fullname || !phone || !username || !password || !latitude || !longitude) {
-        alert('Όλα τα πεδία είναι υποχρεωτικά.');
+        alert('All the filds are mandatory');
         return false;
     }
 
     // Επιβεβαίωση αν ο αριθμός τηλεφώνου έχει το σωστό format
     if (!/^69[0-9]{8}$/.test(phone)) {
-        alert('Το τηλέφωνο πρέπει να ξεκινάει με 69 και να έχει 10 ψηφία.');
+        alert('The phone number must start with 69 and must have 10 digits');
         return false;
     }
 
