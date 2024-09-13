@@ -33,9 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Please select items and provide a description.";
     }
 }
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -50,17 +47,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container">
     <h2>Create Announcement</h2>
 
+    <!-- Error message (if any) -->
     <?php if (isset($error_message)): ?>
         <div class="error-message"><?php echo $error_message; ?></div>
     <?php endif; ?>
 
+    <!-- Success message (if announcement was created successfully) -->
     <?php if (isset($_SESSION['success_message'])): ?>
-        <div class="success-message"><?php echo $_SESSION['success_message']; ?></div>
+        <div class="message"><?php echo $_SESSION['success_message']; ?></div>
         <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
     <form method="POST" action="create_announcement.php">
-        <!-- Τροποποίηση για πολλαπλή επιλογή κατηγοριών -->
         <label for="category">Select Categories (Press Ctrl to select multiple):</label>
         <select id="category" name="categories[]" multiple="multiple" style="width: 100%;">
             <?php foreach ($categories as $category): ?>
@@ -68,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endforeach; ?>
         </select>
 
-        <!-- Τα items θα φορτώνονται δυναμικά με βάση τις επιλεγμένες κατηγορίες -->
         <label for="items">Select Items (Press Ctrl to select multiple):</label>
         <select name="items[]" id="items" multiple="multiple" style="width: 100%;" disabled>
             <option value="">Select an Item</option>
@@ -82,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 </div>
-<link rel="stylesheet" href="../style/styles.css">
+
 <!-- Custom JS for form interaction -->
 <script src="../scripts/announcements.js"></script>
 </body>

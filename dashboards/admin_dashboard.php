@@ -25,7 +25,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
         <li><a href="../actions/manage_rescuers.php">Manage Rescuers</a></li>
         <li><a href="../actions/upload_json.php">Upload JSON Data</a></li>
         <li><a href="../actions/manage_citizens.php">View Citizens</a></li>
-        <li><a href="javascript:void(0)" id="viewMapBtn">View Map</a></li>
+        <li><a href="javascript:void(0)" id="viewMapBtn">Map</a></li>
         <li><a href="../admin_map.php">Set Base Location</a></li>
         <li><a href="../actions/announcements.php">Announcements</a></li>
         <li><a href="../actions/statistics.php">Statistics</a></li>
