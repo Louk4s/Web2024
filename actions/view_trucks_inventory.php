@@ -15,7 +15,12 @@ $user_data = $user_result->fetch_assoc();
 $rescuer_id = $user_data['id'];
 
 // Fetch current inventory for rescuer
-$inventory_query = "SELECT * FROM inventory WHERE rescuer_id = '$rescuer_id'";
+$inventory_query = "
+    SELECT i.name AS item_name, inv.quantity 
+    FROM inventory inv
+    JOIN items i ON inv.item_id = i.id
+    WHERE inv.rescuer_id = '$rescuer_id'
+";
 $inventory_result = $conn->query($inventory_query);
 $inventory_items = [];
 while ($row = $inventory_result->fetch_assoc()) {
@@ -47,8 +52,8 @@ $conn->close();
             </tr>
             <?php foreach ($inventory_items as $inv_item): ?>
                 <tr>
-                    <td><?= $inv_item['item_name'] ?></td>
-                    <td><?= $inv_item['quantity'] ?></td>
+                    <td><?= htmlspecialchars($inv_item['item_name']) ?></td>
+                    <td><?= htmlspecialchars($inv_item['quantity']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </table>

@@ -9,46 +9,97 @@ include '../db_connect.php';
 
 if (isset($_GET['task_id'])) {
     $task_id = intval($_GET['task_id']);
-    $rescuer_id = $_SESSION['user_id']; // Rescuer's ID
+    $rescuer_id = $_SESSION['user_id']; 
 
-    // Update the task status to 'completed'
-    $sql_update_task = "UPDATE tasks SET status = 'completed', completed_at = NOW() WHERE task_id = ? AND rescuer_id = ?";
-    $stmt_task = $conn->prepare($sql_update_task);
-    $stmt_task->bind_param('ii', $task_id, $rescuer_id);
-
-    if ($stmt_task->execute()) {
-        // Fetch the task type (offer/request) and the corresponding offer/request id
-        $sql_fetch_task = "SELECT task_type, offer_id, request_id FROM tasks WHERE task_id = ?";
-        $stmt_fetch_task = $conn->prepare($sql_fetch_task);
-        $stmt_fetch_task->bind_param('i', $task_id);
-        $stmt_fetch_task->execute();
-        $result_task = $stmt_fetch_task->get_result();
-        $task = $result_task->fetch_assoc();
-
-        if ($task['task_type'] == 'offer') {
-            // Update the status in the offers table
-            $offer_id = $task['offer_id'];
-            $sql_update_offer = "UPDATE offers SET status = 'completed' WHERE id = ?";
-            $stmt_offer = $conn->prepare($sql_update_offer);
-            $stmt_offer->bind_param('i', $offer_id);
-            $stmt_offer->execute();
-        } elseif ($task['task_type'] == 'request') {
-            // Update the status in the requests table
-            $request_id = $task['request_id'];
-            $sql_update_request = "UPDATE requests SET status = 'completed' WHERE id = ?";
-            $stmt_request = $conn->prepare($sql_update_request);
-            $stmt_request->bind_param('i', $request_id);
+    // Fetch the task type to determine how to handle the inventory
+    $sql_task = "SELECT task_type, request_id, offer_id FROM tasks WHERE task_id = ?";
+    $stmt_task = $conn->prepare($sql_task);
+    $stmt_task->bind_param('i', $task_id);
+    $stmt_task->execute();
+    $task_result = $stmt_task->get_result();
+    $task = $task_result->fetch_assoc();
+    
+    if ($task) {
+        if ($task['task_type'] == 'request') {
+            // Update inventory for request (reduce item quantity)
+            $sql_request = "SELECT r.item_id, r.quantity FROM requests r WHERE r.id = ?";
+            $stmt_request = $conn->prepare($sql_request);
+            $stmt_request->bind_param('i', $task['request_id']);
             $stmt_request->execute();
+            $request_result = $stmt_request->get_result();
+            $request = $request_result->fetch_assoc();
+
+            if ($request) {
+                $item_id = $request['item_id'];
+                $quantity_to_deduct = $request['quantity'];
+
+                // Deduct the quantity from the rescuer's inventory
+                $sql_update_inventory = "UPDATE inventory SET quantity = quantity - ? WHERE rescuer_id = ? AND item_id = ?";
+                $stmt_update_inventory = $conn->prepare($sql_update_inventory);
+                $stmt_update_inventory->bind_param('iii', $quantity_to_deduct, $rescuer_id, $item_id);
+                $stmt_update_inventory->execute();
+            }
+        } elseif ($task['task_type'] == 'offer') {
+            // Update inventory for offer (increase item quantity)
+            $sql_offer = "SELECT o.item_ids FROM offers o WHERE o.id = ?";
+            $stmt_offer = $conn->prepare($sql_offer);
+            $stmt_offer->bind_param('i', $task['offer_id']);
+            $stmt_offer->execute();
+            $offer_result = $stmt_offer->get_result();
+            $offer = $offer_result->fetch_assoc();
+
+            if ($offer) {
+                $item_quantities = explode(',', $offer['item_ids']); // Assuming item_ids are stored as item_id:quantity
+
+                foreach ($item_quantities as $item_quantity) {
+                    list($item_id, $quantity) = explode(':', $item_quantity);
+
+                    // Add the offered quantity to the rescuer's inventory or update the quantity if already exists
+                    $sql_check_inventory = "SELECT quantity FROM inventory WHERE rescuer_id = ? AND item_id = ?";
+                    $stmt_check_inventory = $conn->prepare($sql_check_inventory);
+                    $stmt_check_inventory->bind_param('ii', $rescuer_id, $item_id);
+                    $stmt_check_inventory->execute();
+                    $inventory_result = $stmt_check_inventory->get_result();
+
+                    if ($inventory_result->num_rows > 0) {
+                        // Update existing inventory with the correct offered quantity
+                        $sql_update_inventory = "UPDATE inventory SET quantity = quantity + ? WHERE rescuer_id = ? AND item_id = ?";
+                        $stmt_update_inventory = $conn->prepare($sql_update_inventory);
+                        $stmt_update_inventory->bind_param('iii', $quantity, $rescuer_id, $item_id);
+                        $stmt_update_inventory->execute();
+                    } else {
+                        // Insert new item into inventory with the offered quantity
+                        $sql_insert_inventory = "INSERT INTO inventory (rescuer_id, item_id, quantity) VALUES (?, ?, ?)";
+                        $stmt_insert_inventory = $conn->prepare($sql_insert_inventory);
+                        $stmt_insert_inventory->bind_param('iii', $rescuer_id, $item_id, $quantity);
+                        $stmt_insert_inventory->execute();
+                    }
+                }
+            }
         }
 
-        // Redirect back to the completed tasks page
+        // Update the task status to 'completed'
+        $sql_update = "UPDATE tasks SET status = 'completed', completed_at = NOW() WHERE task_id = ? AND rescuer_id = ?";
+        $stmt_update = $conn->prepare($sql_update);
+        $stmt_update->bind_param('ii', $task_id, $rescuer_id);
+        $stmt_update->execute();
+
+        // Update the status of the corresponding request or offer
+        if ($task['task_type'] == 'request') {
+            $sql_update_request = "UPDATE requests SET status = 'completed' WHERE id = ?";
+            $stmt_update_request = $conn->prepare($sql_update_request);
+            $stmt_update_request->bind_param('i', $task['request_id']);
+            $stmt_update_request->execute();
+        } elseif ($task['task_type'] == 'offer') {
+            $sql_update_offer = "UPDATE offers SET status = 'completed' WHERE id = ?";
+            $stmt_update_offer = $conn->prepare($sql_update_offer);
+            $stmt_update_offer->bind_param('i', $task['offer_id']);
+            $stmt_update_offer->execute();
+        }
+
         header("Location: view_completed_tasks.php");
         exit();
-    } else {
-        echo "Error updating task: " . $stmt_task->error;
     }
-
-    $stmt_task->close();
 }
 
 $conn->close();

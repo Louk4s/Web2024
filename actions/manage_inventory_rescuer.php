@@ -23,7 +23,12 @@ while ($row = $items_result->fetch_assoc()) {
 }
 
 // Fetch current inventory for rescuer for unloading
-$inventory_query = "SELECT * FROM inventory WHERE rescuer_id = $rescuer_id";
+$inventory_query = "
+    SELECT i.name AS item_name, inv.quantity, inv.item_id
+    FROM inventory inv
+    JOIN items i ON inv.item_id = i.id
+    WHERE inv.rescuer_id = $rescuer_id
+";
 $inventory_result = $conn->query($inventory_query);
 $inventory_items = [];
 while ($row = $inventory_result->fetch_assoc()) {
@@ -43,12 +48,12 @@ $conn->close();
 </head>
 <body>
 <div class="container">
-    <h2>Manage Inventory <?php echo $_SESSION['username']; ?> (Rescuer)</h2>
+    <h2>Manage Inventory for <?php echo $_SESSION['username']; ?> (Rescuer)</h2>
 
     <!-- Load Items -->
     <h3>Load Items from Base Storage</h3>
     <form action="../actions/load_items.php" method="POST">
-        <select name="item_id[]" multiple="multiple">
+        <select name="item_id[]" multiple="multiple" size="10">
             <?php foreach ($items as $item): ?>
                 <option value="<?= $item['id'] ?>"><?= $item['name'] ?> - Available: <?= $item['quantity'] ?></option>
             <?php endforeach; ?>
@@ -62,9 +67,9 @@ $conn->close();
     </form>
 
     <!-- Unload Items -->
-    <h3>Unload Items in the Truck</h3>
+    <h3>Unload Items from the Truck</h3>
     <form action="../actions/unload_items.php" method="POST">
-        <select name="unload_item_id[]" multiple="multiple">
+        <select name="unload_item_id[]" multiple="multiple" size="10">
             <?php if (!empty($inventory_items)): ?>
                 <?php foreach ($inventory_items as $inv_item): ?>
                     <option value="<?= $inv_item['item_id'] ?>"><?= $inv_item['item_name'] ?> - Quantity: <?= $inv_item['quantity'] ?></option>

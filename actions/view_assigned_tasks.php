@@ -7,26 +7,35 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'rescuer') {
 
 include '../db_connect.php';
 
-// Fetch tasks from the database
+$rescuer_id = $_SESSION['user_id'];
+
+// Fetch tasks that are either pending or in progress for the current rescuer
 $sql = "
     SELECT 
         t.task_id, 
         t.task_type, 
         t.status, 
         u.fullname AS citizen_name, 
+        u.phone AS citizen_phone, 
         IF(t.task_type = 'offer', o.item_ids, r.quantity) AS item_details,
+        IF(t.task_type = 'offer', NULL, i.name) AS item_name,
         t.latitude, 
         t.longitude, 
         t.rescuer_id
     FROM tasks t
     LEFT JOIN offers o ON t.offer_id = o.id
     LEFT JOIN requests r ON t.request_id = r.id
+    LEFT JOIN items i ON r.item_id = i.id
     LEFT JOIN users u ON (o.user_id = u.id OR r.user_id = u.id)
-    WHERE t.status != 'completed'
+    WHERE t.status = 'pending'
+    OR (t.status = 'in_progress' AND t.rescuer_id = ?)
     ORDER BY t.created_at DESC
 ";
 
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $rescuer_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $tasks = [];
 if ($result && $result->num_rows > 0) {
@@ -43,6 +52,16 @@ $stmt->execute();
 $rescuer_location_result = $stmt->get_result();
 $rescuer_location = $rescuer_location_result->fetch_assoc();
 $stmt->close();
+
+// Collect all item details in advance (for offer items)
+$all_items_query = "SELECT id, name FROM items";
+$all_items_result = $conn->query($all_items_query);
+$items = [];
+if ($all_items_result && $all_items_result->num_rows > 0) {
+    while ($item_row = $all_items_result->fetch_assoc()) {
+        $items[$item_row['id']] = $item_row['name'];
+    }
+}
 
 $conn->close();
 ?>
@@ -67,15 +86,32 @@ $conn->close();
             <th>Task Type</th>
             <th>Status</th>
             <th>Citizen</th>
-            <th>Items/Request</th>
+            <th>Phone</th>
+            <th>Offers/Request</th>
             <th>Action</th>
+            <th>Locate on Map</th> <!-- New Column for the locate button -->
         </tr>
         <?php foreach ($tasks as $task): ?>
             <tr>
                 <td><?php echo ucfirst($task['task_type']); ?></td>
                 <td><?php echo ucfirst($task['status']); ?></td>
                 <td><?php echo htmlspecialchars($task['citizen_name']); ?></td>
-                <td><?php echo $task['task_type'] == 'offer' ? "Offer of items" : "Request for " . $task['item_details'] . " items"; ?></td>
+                <td><?php echo htmlspecialchars($task['citizen_phone']); ?></td>
+                <td>
+                    <?php 
+                    if ($task['task_type'] == 'offer') {
+                        // For offers, display the item names and quantities
+                        $offer_items = explode(',', $task['item_details']);
+                        foreach ($offer_items as $item) {
+                            list($item_id, $quantity) = explode(':', $item);
+                            echo "Offer of $quantity " . htmlspecialchars($items[$item_id]) . "<br>";
+                        }
+                    } else {
+                        // For requests, display item name and requested quantity
+                        echo "Request for " . htmlspecialchars($task['item_details']) . " " . htmlspecialchars($task['item_name']);
+                    }
+                    ?>
+                </td>
                 <td>
                     <?php if ($task['status'] == 'pending' && is_null($task['rescuer_id'])): ?>
                         <a href="accept_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Accept Task</a>
@@ -86,6 +122,10 @@ $conn->close();
                     <?php else: ?>
                         Task Completed
                     <?php endif; ?>
+                </td>
+                <td>
+                    <!-- Locate on Map Button -->
+                    <button class="locate-btn" data-lat="<?php echo $task['latitude']; ?>" data-lng="<?php echo $task['longitude']; ?>">Locate on Map</button>
                 </td>
             </tr>
         <?php endforeach; ?>

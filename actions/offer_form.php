@@ -122,7 +122,7 @@ $conn->close();
                                 <?php echo $item['name']; ?>
                             </td>
                             <td class="item-quantity">
-                                <input type="number" name="quantities[]" min="1" placeholder="Quantity" style="width: 60px;">
+                                <input type="number" name="quantities[]" min="1" placeholder="Quantity" style="width: 60px;" required>
                             </td>
                         </tr>
                     <?php endforeach; ?>

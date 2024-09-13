@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var rescuerMarker;
     var newLatLng = null;
     var activeTaskLine = null; // To hold the current in-progress task line
+    var taskMarkers = {}; // To store all task markers by task ID
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -31,8 +32,46 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 console.error("Base location not found in the response");
             }
+
+            // Add task markers with popup information
+            data.tasks.forEach(function (task) {
+                var taskIconUrl;
+                var popupText = '';  // Initializing popup content
+
+                if (task.task_type === 'offer') {
+                    taskIconUrl = task.status === 'pending' ? '../icons/pending_offer_icon.png' : '../icons/inprogress_offer_icon.png';
+                } else {
+                    taskIconUrl = task.status === 'pending' ? '../icons/pending_request_icon.png' : '../icons/inprogress_request_icon.png';
+                }
+
+                // Add task details to popup
+                popupText += `<b>Citizen:</b> ${task.citizen_name || 'Unknown'}<br>`;
+                popupText += `<b>Phone:</b> ${task.citizen_phone || 'Unknown'}<br>`;
+                popupText += `<b>Registered On:</b> ${task.registered_on || 'Unknown'}<br>`;
+                popupText += `<b>Items:</b> ${task.items || 'Unknown'}<br>`;
+                popupText += `<b>Status:</b> ${task.status || 'Unknown'}<br>`;
+
+                // Add "Complete" button only if the task status is in progress
+                if (task.status === 'in_progress') {
+                    popupText += `<a href="complete_task.php?task_id=${task.task_id}" class="button">Complete</a>`;
+                }
+
+                popupText += `<a href="cancel_task.php?task_id=${task.task_id}" class="button">Cancel</a>`;
+
+                // Add the task marker
+                var taskMarker = L.marker([task.latitude, task.longitude], {
+                    icon: L.icon({
+                        iconUrl: taskIconUrl,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30]
+                    })
+                }).addTo(map).bindPopup(popupText);  // Show popup with the task details
+
+                // Store the task marker with task ID for easy reference later
+                taskMarkers[task.task_id] = taskMarker;
+            });
         })
-        .catch(error => console.error('Error fetching base location:', error));
+        .catch(error => console.error('Error fetching map data:', error));
 
     // Rescuer marker
     rescuerMarker = L.marker([rescuerLocation.latitude, rescuerLocation.longitude], {
@@ -83,57 +122,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Load task markers
-    tasksData.forEach(function(task) {
-        var taskIconUrl;
-        var popupText = task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1) + ' Task';
-
-        if (task.task_type === 'offer') {
-            taskIconUrl = task.status === 'pending' ? '../icons/pending_offer_icon.png' : '../icons/inprogress_offer_icon.png';
-        } else {
-            taskIconUrl = task.status === 'pending' ? '../icons/pending_request_icon.png' : '../icons/inprogress_request_icon.png';
-        }
-
-        // Add the task marker
-        var taskMarker = L.marker([task.latitude, task.longitude], {
-            icon: L.icon({
-                iconUrl: taskIconUrl,
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            })
-        }).addTo(map).bindPopup(popupText);
-
-        // Log coordinates for debugging
-        console.log('Rescuer Location:', rescuerLocation);
-        console.log('Task Location:', task);
-
-        // If the task is in progress, draw a straight red line between the rescuer and the task
-        if (task.status === 'in_progress' && task.rescuer_id === rescuerLocation.rescuer_id) {
-            if (activeTaskLine) {
-                map.removeLayer(activeTaskLine); // Remove previous line if there is one
-            }
-
-            console.log('Drawing red line between rescuer and task:', task);
-
-            // Double-check if coordinates are different
-            if (rescuerLocation.latitude !== task.latitude || rescuerLocation.longitude !== task.longitude) {
-                activeTaskLine = L.polyline([
-                    [rescuerLocation.latitude, rescuerLocation.longitude],
-                    [task.latitude, task.longitude]
-                ], {color: 'red', weight: 3}).addTo(map);
-            } else {
-                console.warn('Rescuer and task locations are the same, no line drawn.');
-            }
-        }
-    });
-
-    // Remove the line when a task is completed
-    document.querySelectorAll('[id^="completeTaskBtn_"]').forEach(function (button) {
+    // Locate task on map when button is clicked
+    document.querySelectorAll('.locate-btn').forEach(function (button) {
         button.addEventListener('click', function () {
-            if (activeTaskLine) {
-                console.log('Removing line for completed task');
-                map.removeLayer(activeTaskLine); // Remove the red line
-                activeTaskLine = null;
+            var lat = parseFloat(this.getAttribute('data-lat'));
+            var lng = parseFloat(this.getAttribute('data-lng'));
+            map.setView([lat, lng], 15); // Zoom into the task location
+            var taskId = this.getAttribute('data-task-id');
+            if (taskMarkers[taskId]) {
+                taskMarkers[taskId].openPopup(); // Open popup for the task marker
             }
         });
     });
