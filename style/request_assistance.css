@@ -53,3 +53,16 @@ button[type="submit"]:hover {
 .back-button:hover {
     background-color: #c82333;
 }
+
+
+.success-message {
+    background-color: #d4edda !important;  /* Light green background */
+    color: #155724 !important;             /* Dark green text */
+    border: 1px solid #c3e6cb !important;  /* Light green border */
+    border-radius: 5px !important;
+    padding: 10px !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    font-size: 16px !important;
+}
+

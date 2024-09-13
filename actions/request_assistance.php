@@ -26,8 +26,10 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request Assistance</title>
 
-    <!-- Reference to the external CSS file -->
+    <!-- References to the external CSS file -->
     <link rel="stylesheet" href="../style/request_assistance.css">
+     <link rel="stylesheet" href="../style/styles.css">
+
 
     <!-- Reference to Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -36,19 +38,15 @@ $conn->close();
 <div class="container">
     <h2>Request Assistance</h2>
 
-    <!-- Εμφάνιση μηνύματος επιτυχίας αν υπάρχει -->
+
     <?php if (isset($_SESSION['success_message'])): ?>
-        <div class="message">
-            <?php echo $_SESSION['success_message']; ?>
-        </div>
-        <?php unset($_SESSION['success_message']); // Αφαίρεση του μηνύματος μετά την εμφάνιση ?>
-        <script>
-            // Αυτόματη ανακατεύθυνση μετά από 3 δευτερόλεπτα
-            setTimeout(function() {
-                window.location.href = '../dashboards/citizen_dashboard.php';
-            }, 3000);
-        </script>
-    <?php endif; ?>
+    <div class="message">
+        <p><?php echo $_SESSION['success_message']; ?></p>
+    </div>
+    <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+
+
 
     <!-- Form to create a new request -->
     <form action="../actions/add_request_action.php" method="POST">
