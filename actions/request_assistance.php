@@ -77,7 +77,7 @@ $conn->close();
     </form>
 
     <!-- Back to Dashboard Button -->
-    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Dashboard</a>
+    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a>
 </div>
 
 <!-- Reference to jQuery -->

@@ -64,7 +64,7 @@ $requests_result = $conn->query($requests_query);
         <?php endif; ?>
     </table>
 
-    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Dashboard</a>
+    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a>
 </div>
 
 </body>

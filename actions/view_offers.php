@@ -92,7 +92,7 @@ $conn->close();
         <p>No offers found.</p>
     <?php endif; ?>
 
-    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Dashboard</a>
+    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a>
 </div>
 </body>
 </html>
