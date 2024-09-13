@@ -66,13 +66,13 @@ $conn->close();
                 <th>Actions</th>
             </tr>
             <?php foreach ($announcements as $announcement): ?>
-                <tr id="announcement-row-<?php echo $announcement['id']; ?>">
+                <tr id="announcement-row-<?php echo htmlspecialchars($announcement['id']); ?>">
                     <td><?php echo htmlspecialchars($announcement['items']); ?></td>
                     <td><?php echo htmlspecialchars($announcement['description']); ?></td>
                     <td><?php echo htmlspecialchars($announcement['created_at']); ?></td>
                     <td>
-                        <!-- Delete Button -->
-                        <button class="delete-button button" data-id="<?php echo $announcement['id']; ?>">Delete</button>
+                        <!-- Delete Button with data-id containing the announcement ID -->
+                        <button class="delete-button button" data-id="<?php echo htmlspecialchars($announcement['id']); ?>">Delete</button>
                     </td>
                 </tr>
             <?php endforeach; ?>

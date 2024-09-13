@@ -1,31 +1,39 @@
 <?php
 session_start();
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+
+// Check if the user is authenticated as admin
+if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
+    http_response_code(403); // Unauthorized
+    echo json_encode(['message' => 'Unauthorized access.']);
     exit();
 }
 
-include '../db_connect.php';
+if (isset($_POST['announcement_id'])) {
+    include '../db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $announcement_id = intval($_POST['announcement_id']); // Sanitize the input
 
-    if ($id > 0) {
-        // Delete the announcement from the database
-        $query = "DELETE FROM announcements WHERE id = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param('i', $id);
-
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to delete announcement']);
-        }
-
-        $stmt->close();
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid announcement ID']);
+    if (!$announcement_id) {
+        echo json_encode(['success' => false, 'message' => 'Invalid announcement ID.']);
+        exit();
     }
+
+    // Prepare the SQL statement
+    $stmt = $conn->prepare("DELETE FROM announcements WHERE id = ?");
+    $stmt->bind_param('i', $announcement_id);
+
+    // Check if the query executed successfully
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Announcement deleted successfully.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to delete announcement.']);
+    }
+
+    $stmt->close();
+    $conn->close();
+} else {
+    http_response_code(400); // Bad Request
+    echo json_encode(['message' => 'Invalid request.']);
 }
-$conn->close();
 ?>
+

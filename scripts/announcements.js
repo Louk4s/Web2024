@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const categorySelect = document.getElementById('category');
     const itemSelect = document.getElementById('items');
 
+    // Existing functionality: Fetch items based on selected categories
     if (categorySelect && itemSelect) {
         categorySelect.addEventListener('change', function () {
             const selectedCategories = Array.from(categorySelect.selectedOptions).map(option => option.value);
@@ -43,7 +44,54 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
     }
-});
 
+    // New functionality: Handle the deletion of announcements
+    const deleteButtons = document.querySelectorAll('.delete-button');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const announcementId = this.getAttribute('data-id');
+            console.log('Delete button clicked for announcement ID:', announcementId);
+
+            if (confirm('Are you sure you want to delete this announcement?')) {
+                deleteAnnouncement(announcementId);
+            }
+        });
+    });
+
+    function deleteAnnouncement(announcementId) {
+        console.log('Sending request to delete announcement with ID:', announcementId);
+
+        fetch('../actions/delete_announcement.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `announcement_id=${encodeURIComponent(announcementId)}`
+        })
+        .then(response => {
+            console.log('Received response from server:', response);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Parsed response:', data);
+
+            if (data.success) {
+                // Remove the corresponding row from the table
+                const row = document.getElementById(`announcement-row-${announcementId}`);
+                if (row) {
+                    row.remove();
+                }
+                alert(data.message);
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting announcement:', error);
+            alert('An error occurred while trying to delete the announcement.');
+        });
+    }
+});
 
 
