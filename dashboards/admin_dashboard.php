@@ -5,7 +5,6 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,37 +12,25 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../style/styles.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
-<div class="container">
-<h2>Welcome, <?php echo $_SESSION['username']; ?> (Admin)</h2>
+<div class="container centered">
+    <h2>Admin Dashboard</h2>
     
     <!-- Admin menu -->
-    <ul>
+    <ul class="admin-menu">
         <li><a href="../actions/manage_inventory.php">Manage Inventory</a></li>
         <li><a href="../actions/manage_rescuers.php">Manage Rescuers</a></li>
         <li><a href="../actions/upload_json.php">Upload JSON Data</a></li>
         <li><a href="../actions/manage_citizens.php">View Citizens</a></li>
-        <li><a href="javascript:void(0)" id="viewMapBtn">Map</a></li>
+        <li><a href="../dashboards/admin_map.php">View Map</a></li> 
         <li><a href="../admin_map.php">Set Base Location</a></li>
-        <li><a href="../actions/announcements.php">Announcements</a></li>
+        <li><a href="../actions/create_announcement.php">Create Announcements</a></li>
+        <li><a href="../actions/view_announcements_admin.php">View Announcements</a></li>
         <li><a href="../actions/statistics.php">Statistics</a></li>
-
     </ul>
     
-    <a href="../logout.php" class="back-button">Logout</a>
-
-    <!-- Map container (Initially hidden) -->
-    <div id="mapContainer" style="display: none; margin-top: 20px;">
-        <div id="map" style="height: 500px;"></div>
-    </div>
+    <a href="../logout.php" class="logout">Logout</a>
 </div>
-
-<!-- External JavaScript -->
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="../scripts/admin_map.js"></script> <!-- Link  JS file -->
-
 </body>
 </html>
-

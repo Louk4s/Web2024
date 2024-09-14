@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Add requests to the map
     requests.forEach(function(request) {
-        var marker = L.marker([request.latitude, request.longitude], {icon: L.icon({iconUrl: '../icons/request-icon.png'})});
+        var marker = L.marker([request.latitude, request.longitude], {icon: L.icon({iconUrl: '../icons/pending_request_icon.png'})});
         marker.bindPopup('Request: ' + request.description);
         requestLayer.addLayer(marker);
     });
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Add offer markers (assuming offers are part of the requests data)
     requests.forEach(function(request) {
         if (request.type === 'offer') {
-            var marker = L.marker([request.latitude, request.longitude], {icon: L.icon({iconUrl: '../icons/offer-icon.png'})});
+            var marker = L.marker([request.latitude, request.longitude], {icon: L.icon({iconUrl: '../icons/pending_offer_icon.png'})});
             marker.bindPopup('Offer: ' + request.description);
             offerLayer.addLayer(marker);
         }

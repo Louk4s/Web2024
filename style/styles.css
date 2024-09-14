@@ -377,3 +377,21 @@ select[multiple] {
     text-align: center; /* Center the button horizontally */
     margin-bottom: 20px; /* Adds space below the container */
 }
+
+.filter-controls {
+    margin: 10px 0;
+}
+
+.filter-controls label {
+    margin-right: 10px;
+}
+
+.back-button {
+    display: inline-block;
+    margin-top: 20px;
+    text-decoration: none;
+    color: white;
+    background-color: red;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
