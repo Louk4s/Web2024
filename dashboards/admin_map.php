@@ -13,6 +13,8 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     <title>Admin Map</title>
     <link rel="stylesheet" href="../style/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" /> 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 </head>
 <body>
     <div class="container">
@@ -28,10 +30,12 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
         <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Dashboard</a>
     </div>
 
-    <!-- Move script to the end of the body tag -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Include Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script src="../scripts/admin_map.js"></script> <!-- Link JS file -->
 </body>
 </html>
+
 
 
