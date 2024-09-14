@@ -9,7 +9,7 @@ include '../db_connect.php';
 
 if (isset($_GET['task_id'])) {
     $task_id = intval($_GET['task_id']);
-    $rescuer_id = $_SESSION['user_id']; 
+    $rescuer_id = $_SESSION['user_id'];
 
     // Fetch the task type to determine how to handle the inventory
     $sql_task = "SELECT task_type, request_id, offer_id FROM tasks WHERE task_id = ?";
@@ -49,12 +49,12 @@ if (isset($_GET['task_id'])) {
             $offer = $offer_result->fetch_assoc();
 
             if ($offer) {
-                $item_quantities = explode(',', $offer['item_ids']); // Assuming item_ids are stored as item_id:quantity
+                $item_quantities = explode(',', $offer['item_ids']); 
 
                 foreach ($item_quantities as $item_quantity) {
                     list($item_id, $quantity) = explode(':', $item_quantity);
 
-                    // Add the offered quantity to the rescuer's inventory or update the quantity if already exists
+                    // Update inventory with the offered quantity
                     $sql_check_inventory = "SELECT quantity FROM inventory WHERE rescuer_id = ? AND item_id = ?";
                     $stmt_check_inventory = $conn->prepare($sql_check_inventory);
                     $stmt_check_inventory->bind_param('ii', $rescuer_id, $item_id);
@@ -62,13 +62,13 @@ if (isset($_GET['task_id'])) {
                     $inventory_result = $stmt_check_inventory->get_result();
 
                     if ($inventory_result->num_rows > 0) {
-                        // Update existing inventory with the correct offered quantity
+                        // Update existing inventory
                         $sql_update_inventory = "UPDATE inventory SET quantity = quantity + ? WHERE rescuer_id = ? AND item_id = ?";
                         $stmt_update_inventory = $conn->prepare($sql_update_inventory);
                         $stmt_update_inventory->bind_param('iii', $quantity, $rescuer_id, $item_id);
                         $stmt_update_inventory->execute();
                     } else {
-                        // Insert new item into inventory with the offered quantity
+                        // Insert new item into inventory
                         $sql_insert_inventory = "INSERT INTO inventory (rescuer_id, item_id, quantity) VALUES (?, ?, ?)";
                         $stmt_insert_inventory = $conn->prepare($sql_insert_inventory);
                         $stmt_insert_inventory->bind_param('iii', $rescuer_id, $item_id, $quantity);

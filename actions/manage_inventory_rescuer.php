@@ -27,8 +27,12 @@ $inventory_query = "
     SELECT i.name AS item_name, inv.quantity, inv.item_id
     FROM inventory inv
     JOIN items i ON inv.item_id = i.id
-    WHERE inv.rescuer_id = $rescuer_id
+    WHERE inv.rescuer_id = $rescuer_id AND inv.quantity > 0
 ";
+
+
+
+
 $inventory_result = $conn->query($inventory_query);
 $inventory_items = [];
 while ($row = $inventory_result->fetch_assoc()) {

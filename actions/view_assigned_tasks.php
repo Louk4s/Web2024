@@ -9,8 +9,8 @@ include '../db_connect.php';
 
 $rescuer_id = $_SESSION['user_id'];
 
-// Fetch tasks that are either pending or in progress for the current rescuer
-$sql = "
+// Fetch pending tasks that are not assigned to any rescuer
+$sql_pending = "
     SELECT 
         t.task_id, 
         t.task_type, 
@@ -28,19 +28,50 @@ $sql = "
     LEFT JOIN items i ON r.item_id = i.id
     LEFT JOIN users u ON (o.user_id = u.id OR r.user_id = u.id)
     WHERE t.status = 'pending'
-    OR (t.status = 'in_progress' AND t.rescuer_id = ?)
     ORDER BY t.created_at DESC
 ";
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $rescuer_id);
-$stmt->execute();
-$result = $stmt->get_result();
+$result_pending = $conn->query($sql_pending);
 
-$tasks = [];
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $tasks[] = $row;
+$pending_tasks = [];
+if ($result_pending && $result_pending->num_rows > 0) {
+    while ($row = $result_pending->fetch_assoc()) {
+        $pending_tasks[] = $row;
+    }
+}
+
+// Fetch in-progress tasks assigned to the rescuer
+$sql_in_progress = "
+    SELECT 
+        t.task_id, 
+        t.task_type, 
+        t.status, 
+        u.fullname AS citizen_name, 
+        u.phone AS citizen_phone, 
+        IF(t.task_type = 'offer', o.item_ids, r.quantity) AS item_details,
+        IF(t.task_type = 'offer', NULL, i.name) AS item_name,
+        t.latitude, 
+        t.longitude, 
+        t.rescuer_id,
+        t.created_at AS registered_on
+    FROM tasks t
+    LEFT JOIN offers o ON t.offer_id = o.id
+    LEFT JOIN requests r ON t.request_id = r.id
+    LEFT JOIN items i ON r.item_id = i.id
+    LEFT JOIN users u ON (o.user_id = u.id OR r.user_id = u.id)
+    WHERE t.status = 'in_progress' AND t.rescuer_id = ?
+    ORDER BY t.created_at DESC
+";
+
+$stmt_in_progress = $conn->prepare($sql_in_progress);
+$stmt_in_progress->bind_param('i', $rescuer_id);
+$stmt_in_progress->execute();
+$result_in_progress = $stmt_in_progress->get_result();
+
+$in_progress_tasks = [];
+if ($result_in_progress && $result_in_progress->num_rows > 0) {
+    while ($row = $result_in_progress->fetch_assoc()) {
+        $in_progress_tasks[] = $row;
     }
 }
 
@@ -80,51 +111,97 @@ $conn->close();
 <div class="container">
     <h2>Assigned Tasks</h2>
 
-    <!-- Task Table -->
+    <!-- Pending Tasks Table -->
+    <h3>Pending Tasks</h3>
     <table>
         <tr>
             <th>Task Type</th>
-            <th>Status</th>
             <th>Citizen</th>
             <th>Phone</th>
             <th>Offers/Request</th>
             <th>Action</th>
-            <th>Locate on Map</th> <!-- New Column for the locate button -->
+            <th>Locate on Map</th>
         </tr>
-        <?php foreach ($tasks as $task): ?>
+        <?php foreach ($pending_tasks as $task): ?>
             <tr>
                 <td><?php echo ucfirst($task['task_type']); ?></td>
-                <td><?php echo ucfirst($task['status']); ?></td>
                 <td><?php echo htmlspecialchars($task['citizen_name']); ?></td>
                 <td><?php echo htmlspecialchars($task['citizen_phone']); ?></td>
                 <td>
                     <?php 
                     if ($task['task_type'] == 'offer') {
-                        // For offers, display the item names and quantities
                         $offer_items = explode(',', $task['item_details']);
                         foreach ($offer_items as $item) {
-                            list($item_id, $quantity) = explode(':', $item);
-                            echo "Offer of $quantity " . htmlspecialchars($items[$item_id]) . "<br>";
+                            if (strpos($item, ':') !== false) {
+                                list($item_id, $quantity) = explode(':', $item);
+                                if (isset($items[$item_id])) {
+                                    echo "Offer of $quantity " . htmlspecialchars($items[$item_id]) . "<br>";
+                                } else {
+                                    echo "Offer of $quantity [Unknown Item]<br>";
+                                }
+                            } else {
+                                echo "[Invalid Item Data]<br>";
+                            }
                         }
                     } else {
-                        // For requests, display item name and requested quantity
                         echo "Request for " . htmlspecialchars($task['item_details']) . " " . htmlspecialchars($task['item_name']);
                     }
                     ?>
                 </td>
                 <td>
-                    <?php if ($task['status'] == 'pending' && is_null($task['rescuer_id'])): ?>
-                        <a href="accept_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Accept Task</a>
-                    <?php elseif ($task['status'] == 'in_progress' && $task['rescuer_id'] == $_SESSION['user_id']): ?>
-                        <a href="complete_task.php?task_id=<?php echo $task['task_id']; ?>" class="button" id="completeTaskBtn_<?php echo $task['task_id']; ?>">Complete Task</a>
-                    <?php elseif ($task['status'] == 'in_progress' && $task['rescuer_id'] != $_SESSION['user_id']): ?>
-                        Task assigned to another rescuer
-                    <?php else: ?>
-                        Task Completed
-                    <?php endif; ?>
+                    <a href="accept_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Accept Task</a>
                 </td>
                 <td>
-                    <!-- Locate on Map Button -->
+                    <button class="locate-btn" data-lat="<?php echo $task['latitude']; ?>" data-lng="<?php echo $task['longitude']; ?>">Locate on Map</button>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+
+    <!-- In-Progress Tasks Table -->
+    <h3>In-Progress Tasks</h3>
+    <table>
+        <tr>
+            <th>Task Type</th>
+            <th>Citizen</th>
+            <th>Phone</th>
+            <th>Offers/Request</th>
+            <th>Registered On</th>
+            <th>Action</th>
+            <th>Locate on Map</th>
+        </tr>
+        <?php foreach ($in_progress_tasks as $task): ?>
+            <tr>
+                <td><?php echo ucfirst($task['task_type']); ?></td>
+                <td><?php echo htmlspecialchars($task['citizen_name']); ?></td>
+                <td><?php echo htmlspecialchars($task['citizen_phone']); ?></td>
+                <td>
+                    <?php 
+                    if ($task['task_type'] == 'offer') {
+                        $offer_items = explode(',', $task['item_details']);
+                        foreach ($offer_items as $item) {
+                            if (strpos($item, ':') !== false) {
+                                list($item_id, $quantity) = explode(':', $item);
+                                if (isset($items[$item_id])) {
+                                    echo "Offer of $quantity " . htmlspecialchars($items[$item_id]) . "<br>";
+                                } else {
+                                    echo "Offer of $quantity [Unknown Item]<br>";
+                                }
+                            } else {
+                                echo "[Invalid Item Data]<br>";
+                            }
+                        }
+                    } else {
+                        echo "Request for " . htmlspecialchars($task['item_details']) . " " . htmlspecialchars($task['item_name']);
+                    }
+                    ?>
+                </td>
+                <td><?php echo $task['registered_on']; ?></td>
+                <td>
+                    <a href="complete_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Complete Task</a>
+                    <a href="cancel_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Cancel</a>
+                </td>
+                <td>
                     <button class="locate-btn" data-lat="<?php echo $task['latitude']; ?>" data-lng="<?php echo $task['longitude']; ?>">Locate on Map</button>
                 </td>
             </tr>
@@ -132,16 +209,20 @@ $conn->close();
     </table>
 
     <!-- Map Container -->
-    <div id="mapContainer" style="height: 500px;"></div>
+    <div id="mapContainer" style="height: 500px; margin-top: 20px;"></div>
 
     <a href="#" id="moveMarkerBtn" class="button">Move Marker</a>
     <a href="#" id="saveMarkerBtn" class="button">Save Location</a>
 
     <a href="../dashboards/rescuer_dashboard.php" class="back-button">Back to Dashboard</a>
 
+    <!-- Leaflet markercluster CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
     <script>
         // Pass the tasks and rescuer location data to the JS map script
-        var tasksData = <?php echo json_encode($tasks); ?>;
+        var tasksData = <?php echo json_encode(array_merge($pending_tasks, $in_progress_tasks)); ?>;
         var rescuerLocation = <?php echo json_encode($rescuer_location); ?>;
     </script>
 </div>
