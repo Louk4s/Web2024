@@ -1,32 +1,32 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Arrays to store markers for toggling
     let rescuerMarkers = [];
     let offerMarkers = [];
     let requestMarkers = [];
+    let map;
 
-    // Fetch map data via AJAX
+    // Initialize map
+    function initMap(baseLat, baseLng) {
+        map = L.map('map').setView([baseLat, baseLng], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+    }
+
+    // Fetch map data
     fetch('../actions/fetch_map_data.php')
         .then(response => response.json())
         .then(data => {
-            if (data.error) {
-                console.error('Error fetching map data:', data.error);
-                return;
-            }
-
-            var baseLat = data.base.latitude;
-            var baseLng = data.base.longitude;
-            var rescuers = data.rescuers;
-            var tasks = data.tasks;
+            let baseLat = data.base.latitude;
+            let baseLng = data.base.longitude;
+            let rescuers = data.rescuers;
+            let tasks = data.tasks;
 
             // Initialize the map
-            var map = L.map('map').setView([baseLat, baseLng], 13);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+            initMap(baseLat, baseLng);
 
             // Add a marker for the base location
-            var baseMarker = L.marker([baseLat, baseLng], {
+            let baseMarker = L.marker([baseLat, baseLng], {
                 icon: L.icon({
                     iconUrl: '../icons/base-icon.png',
                     iconSize: [20, 20],
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 draggable: false
             }).addTo(map).bindPopup('<div class="custom-popup">Base Location</div>').openPopup();
 
-            // Add rescuers to the map
+            // Add rescuers and draw lines to their active tasks
             rescuers.forEach(function (rescuer) {
                 if (rescuer.latitude && rescuer.longitude) {
                     let activeTask = tasks.find(task => task.rescuer_id === rescuer.rescuer_id && task.status === 'in_progress');
@@ -52,13 +52,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                             iconAnchor: [10, 20],
                             popupAnchor: [0, -20]
                         })
-                    }).addTo(map);
+                    }).bindPopup(popupContent).addTo(map);
 
-                    rescuerMarker.bindPopup(popupContent);
                     rescuerMarkers.push(rescuerMarker);
 
+                    // Draw line to active task if available
                     if (activeTask) {
-                        // Draw line to active task
                         let line = L.polyline([[rescuer.latitude, rescuer.longitude], [activeTask.latitude, activeTask.longitude]], {
                             color: 'blue'
                         }).addTo(map);
@@ -66,7 +65,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
             });
 
-            // Add task markers (offers and requests)
+            // Add task markers (offers/requests)
             tasks.forEach(function (task) {
                 let iconUrl = task.task_type === 'offer' ? '../icons/offer-icon.png' : '../icons/request-icon.png';
                 let marker = L.marker([task.latitude, task.longitude], {
@@ -76,16 +75,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         iconAnchor: [10, 20],
                         popupAnchor: [0, -20]
                     })
-                }).addTo(map);
-
-                let popupContent = `Task Type: ${task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1)}<br>
-                                    Citizen: ${task.citizen_name}<br>
-                                    Phone: ${task.citizen_phone}<br>
-                                    Registered On: ${task.registered_on}<br>
-                                    Items: ${task.items}<br>
-                                    Status: ${task.status}`;
-                
-                marker.bindPopup(popupContent);
+                }).bindPopup(`
+                    Task Type: ${task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1)}<br>
+                    Citizen: ${task.citizen_name}<br>
+                    Phone: ${task.citizen_phone}<br>
+                    Registered On: ${task.created_at}<br>
+                    Items: ${task.items}<br>
+                    Status: ${task.status}
+                `).addTo(map);
 
                 if (task.task_type === 'offer') {
                     offerMarkers.push(marker);
@@ -94,7 +91,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
             });
 
-            // Toggle functionality
+            // Toggle functionality for markers
             document.getElementById('showRescuers').addEventListener('change', function () {
                 toggleMarkers(rescuerMarkers, this.checked);
             });
@@ -107,9 +104,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         })
         .catch(error => console.error('Error fetching map data:', error));
 
-    // Helper function to toggle marker visibility
-    function toggleMarkers(layerGroup, isChecked) {
-        layerGroup.forEach(function (marker) {
+    // Toggle marker visibility
+    function toggleMarkers(markerArray, isChecked) {
+        markerArray.forEach(function (marker) {
             if (isChecked) {
                 map.addLayer(marker);
             } else {
