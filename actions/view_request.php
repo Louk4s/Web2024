@@ -47,6 +47,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
         ];
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -56,14 +57,22 @@ if ($requests_result && $requests_result->num_rows > 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Requests</title>
     <link rel="stylesheet" href="../style/styles.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery CDN -->
 </head>
 <body>
 <div class="container">
     <h2>Your Requests</h2>
 
-    <!-- Display success or error message -->
-    <div id="message"></div>
+    <!-- Display success or error message here under the h2 header -->
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="success-message"><?php echo $_SESSION['success_message']; ?></div>
+        <?php unset($_SESSION['success_message']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="error-message"><?php echo $_SESSION['error_message']; ?></div>
+        <?php unset($_SESSION['error_message']); ?>
+    <?php endif; ?>
 
     <?php if (count($requests) > 0): ?>
         <table>
@@ -72,7 +81,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 <th>Quantity</th>
                 <th>Status</th>
                 <th>Date Created</th>
-                <th>Completed At</th> <!-- New column for completed_at date -->
+                <th>Completed At</th>
                 <th>Actions</th>
             </tr>
             <?php foreach ($requests as $request): ?>
@@ -81,9 +90,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     <td><?php echo htmlspecialchars($request['quantity']); ?></td>
                     <td><?php echo htmlspecialchars($request['status']); ?></td>
                     <td><?php echo htmlspecialchars($request['created_at']); ?></td>
-                    <td>
-                        <?php echo $request['status'] === 'completed' ? htmlspecialchars($request['completed_at']) : 'N/A'; ?>
-                    </td>
+                    <td><?php echo $request['status'] === 'completed' ? htmlspecialchars($request['completed_at']) : 'N/A'; ?></td>
                     <td>
                         <?php if ($request['status'] == 'pending'): ?>
                             <button class="cancel-btn" data-id="<?php echo $request['id']; ?>">Cancel Request</button>
@@ -103,24 +110,9 @@ if ($requests_result && $requests_result->num_rows > 0) {
     <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a>
 </div>
 
-<script>
-    $(document).ready(function() {
-        $('.cancel-btn').click(function() {
-            var requestId = $(this).data('id');
-            if (confirm('Are you sure you want to cancel this request?')) {
-                $.post('cancel_request.php', { request_id: requestId }, function(response) {
-                    var data = JSON.parse(response);
-                    if (data.success) {
-                        $('#message').html('<div class="success-message">' + data.message + '</div>');
-                        $('#request-row-' + requestId).remove(); // Remove the canceled request from the table
-                    } else {
-                        $('#message').html('<div class="error-message">' + data.message + '</div>');
-                    }
-                });
-            }
-        });
-    });
-</script>
+<!-- Link to the external JS file -->
+<script src="../scripts/cancel_button.js"></script> <!-- Adjust the path based on your file structure -->
 
 </body>
 </html>
+

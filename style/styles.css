@@ -196,6 +196,16 @@ a:hover {
     text-align: center;
 }
 
+/* Error message styles */
+.error-message {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f8d7da; /* Light red background */
+    color: #721c24; /* Dark red text */
+    border: 1px solid #f5c6cb; /* Light red border */
+    border-radius: 5px;
+    text-align: center;
+}
 
 /* Media queries for responsiveness */
 @media (max-width: 600px) {
@@ -376,22 +386,4 @@ select[multiple] {
 .button-container {
     text-align: center; /* Center the button horizontally */
     margin-bottom: 20px; /* Adds space below the container */
-}
-
-.filter-controls {
-    margin: 10px 0;
-}
-
-.filter-controls label {
-    margin-right: 10px;
-}
-
-.back-button {
-    display: inline-block;
-    margin-top: 20px;
-    text-decoration: none;
-    color: white;
-    background-color: red;
-    padding: 10px 20px;
-    border-radius: 5px;
 }

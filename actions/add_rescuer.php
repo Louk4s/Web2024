@@ -94,6 +94,6 @@ $conn->close();
     <a href="../dashboards/admin_dashboard.php" class="back-button">Back to Admin Dashboard</a>
 </div>
 <script src="../scripts/validation.js"></script>
-<script src="../scripts/validation.js"></script>
+
 </body>
 </html>

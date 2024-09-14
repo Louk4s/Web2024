@@ -28,7 +28,7 @@ if ($stmt_request->affected_rows > 0) {
     $delete_null_task_sql = "DELETE FROM tasks WHERE offer_id IS NULL AND request_id IS NULL";
     $conn->query($delete_null_task_sql);
 
-    echo json_encode(['success' => true, 'message' => 'Request and associated task successfully canceled and deleted.']);
+    echo json_encode(['success' => true, 'message' => 'Request and associated task successfully canceled.']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to cancel the request or the request does not belong to you.']);
 }

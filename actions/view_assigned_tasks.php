@@ -214,7 +214,7 @@ $conn->close();
     <a href="#" id="moveMarkerBtn" class="button">Move Marker</a>
     <a href="#" id="saveMarkerBtn" class="button">Save Location</a>
 
-    <a href="../dashboards/rescuer_dashboard.php" class="back-button">Back to Dashboard</a>
+    <a href="../dashboards/rescuer_dashboard.php" class="back-button">Back to Rescuer Dashboard</a>
 
     <!-- Leaflet markercluster CSS and JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
