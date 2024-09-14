@@ -19,8 +19,13 @@ if ($user_result && $user_result->num_rows > 0) {
     die("User not found");
 }
 
-// Fetch offers associated with the user
-$offers_query = "SELECT o.id, o.item_ids, o.status, o.created_at FROM offers o WHERE o.user_id = $user_id ORDER BY o.created_at DESC";
+// Fetch offers associated with the user along with the completed_at from the tasks table
+$offers_query = "
+    SELECT o.id, o.item_ids, o.status, o.created_at, t.completed_at 
+    FROM offers o 
+    LEFT JOIN tasks t ON o.id = t.offer_id 
+    WHERE o.user_id = $user_id 
+    ORDER BY o.created_at DESC";
 $offers_result = $conn->query($offers_query);
 
 // Parse item_ids and fetch the item names and quantities
@@ -44,7 +49,8 @@ if ($offers_result && $offers_result->num_rows > 0) {
             'id' => $row['id'],
             'items' => implode(', ', $item_details), // Join all item details into a single string
             'status' => $row['status'],
-            'created_at' => $row['created_at']
+            'created_at' => $row['created_at'],
+            'completed_at' => $row['completed_at'] // Add the completed_at date from the tasks table
         ];
     }
 }
@@ -130,7 +136,8 @@ $conn->close();
             <tr>
                 <th>Items</th>
                 <th>Status</th>
-                <th>Date</th>
+                <th>Date Created</th>
+                <th>Completed At</th> <!-- New column for completed_at date -->
                 <th>Actions</th>
             </tr>
             <?php foreach ($offers as $offer): ?>
@@ -138,6 +145,9 @@ $conn->close();
                     <td><?php echo htmlspecialchars($offer['items']); ?></td>
                     <td><?php echo htmlspecialchars($offer['status']); ?></td>
                     <td><?php echo htmlspecialchars($offer['created_at']); ?></td>
+                    <td>
+                        <?php echo $offer['status'] === 'completed' ? htmlspecialchars($offer['completed_at']) : 'N/A'; ?>
+                    </td>
                     <td>
                         <?php if ($offer['status'] == 'pending'): ?>
                             <a href="view_offers.php?cancel_offer_id=<?php echo $offer['id']; ?>" class="button">Cancel Offer</a>
