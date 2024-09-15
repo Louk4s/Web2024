@@ -67,7 +67,7 @@ if (isset($_GET['cancel_offer_id'])) {
         $delete_null_tasks_sql = "DELETE FROM tasks WHERE offer_id IS NULL AND request_id IS NULL";
         $conn->query($delete_null_tasks_sql);
 
-        $_SESSION['success_message'] = 'Offer and associated tasks successfully canceled.';
+        $_SESSION['success_message'] = 'Offer and associated task successfully canceled.';
     } else {
         $_SESSION['error_message'] = 'Unable to cancel the offer.';
     }
@@ -150,6 +150,8 @@ $conn->close();
                             <a href="view_offers.php?cancel_offer_id=<?php echo $offer['id']; ?>" class="button">Cancel Offer</a>
                         <?php elseif ($offer['status'] == 'completed'): ?>
                             <a href="view_offers.php?delete_offer_id=<?php echo $offer['id']; ?>" class="button">Delete Offer</a>
+                            <?php elseif ($offer['status'] == ''): ?>
+                                <span class="disabled-action">Cannot cancel or delete when in progress</span>
                         <?php endif; ?>
                     </td>
                 </tr>
