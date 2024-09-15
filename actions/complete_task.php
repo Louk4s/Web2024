@@ -5,6 +5,11 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'rescuer') {
     exit();
 }
 
+//check if rescuer is inside the citizen's 50m circle
+if (!isset($_SESSION['isInsideCircleCitizen']) || !$_SESSION['isInsideCircleCitizen']) {
+    echo "You must be within the 50m radius to complete this task.";
+    exit();
+}
 include '../db_connect.php';
 
 if (isset($_GET['task_id'])) {
