@@ -56,7 +56,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Requests</title>
-    <link rel="stylesheet" href="../style/styles.css">
+    <link rel="stylesheet" href="../style/styles.css"> <!-- Assuming styles.css includes .message class -->
     <link rel="stylesheet" href="../style/cancel_button.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery CDN -->
 </head>
@@ -64,14 +64,16 @@ if ($requests_result && $requests_result->num_rows > 0) {
 <div class="container">
     <h2>Your Requests</h2>
 
+    <div id="message"></div> <!-- This is where the success/error message will appear -->
+
     <!-- Display success or error message here under the h2 header -->
     <?php if (isset($_SESSION['success_message'])): ?>
-        <div class="success-message"><?php echo $_SESSION['success_message']; ?></div>
+        <div class="message"><?php echo $_SESSION['success_message']; ?></div> <!-- Use .message class for consistent styling -->
         <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
     <?php if (isset($_SESSION['error_message'])): ?>
-        <div class="error-message"><?php echo $_SESSION['error_message']; ?></div>
+        <div class="message"><?php echo $_SESSION['error_message']; ?></div> <!-- Use .message class for error messages as well -->
         <?php unset($_SESSION['error_message']); ?>
     <?php endif; ?>
 
@@ -116,4 +118,5 @@ if ($requests_result && $requests_result->num_rows > 0) {
 
 </body>
 </html>
+
 
