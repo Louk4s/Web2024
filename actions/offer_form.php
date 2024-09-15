@@ -88,19 +88,20 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Offer</title>
-    <link rel="stylesheet" href="../style/styles.css">
+    <link rel="stylesheet" href="../style/styles.css"> <!-- Ensure this CSS file contains the correct styles -->
 </head>
 <body>
 <div class="container">
     <h2>Create Offer</h2>
 
-    <?php if (isset($error_message)): ?>
-        <div class="error-message"><?php echo $error_message; ?></div>
+    <!-- Display success or error message -->
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="message"><?php echo $_SESSION['success_message']; ?></div>
+        <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
-    <?php if (isset($_SESSION['success_message'])): ?>
-        <div class="success-message"><?php echo $_SESSION['success_message']; ?></div>
-        <?php unset($_SESSION['success_message']); ?>
+    <?php if (isset($error_message)): ?>
+        <div class="error-message"><?php echo $error_message; ?></div>
     <?php endif; ?>
 
     <form method="POST" action="offer_form.php?announcement_id=<?php echo $announcement_id; ?>">
@@ -139,3 +140,4 @@ $conn->close();
 </div>
 </body>
 </html>
+

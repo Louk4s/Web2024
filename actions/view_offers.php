@@ -118,7 +118,7 @@ $conn->close();
 
     <!-- Display success message -->
     <?php if (isset($_SESSION['success_message'])): ?>
-        <div class="success-message"><?php echo $_SESSION['success_message']; ?></div>
+        <div class="message"><?php echo $_SESSION['success_message']; ?></div>
         <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
