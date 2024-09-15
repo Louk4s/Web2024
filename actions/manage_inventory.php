@@ -87,7 +87,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Inventory</title>
+    <title>Manage Base Inventory</title>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../style/styles.css">
@@ -102,7 +102,7 @@ $conn->close();
     <div class="button-container">
     <a href="../dashboards/admin_dashboard.php" class="back-button back-to-dashboard-top">Back to Admin Dashboard</a>
     </div>
-    <h2>Manage Inventory</h2>
+    <h2>Manage Base Inventory</h2>
 
     <!-- Success Message -->
     <?php if ($success_message): ?>

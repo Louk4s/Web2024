@@ -151,9 +151,7 @@ $conn->close();
                 <td>
                     <a href="accept_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Accept Task</a>
                 </td>
-                <td>
-                    <button class="locate-btn" data-lat="<?php echo $task['latitude']; ?>" data-lng="<?php echo $task['longitude']; ?>">Locate on Map</button>
-                </td>
+                
             </tr>
         <?php endforeach; ?>
     </table>
@@ -198,9 +196,12 @@ $conn->close();
                 </td>
                 <td><?php echo $task['registered_on']; ?></td>
                 <td>
-                    <a href="complete_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Complete Task</a>
-                    <a href="cancel_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Cancel</a>
+                    <div class="table-actions">
+                        <a href="complete_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Complete Task</a>
+                        <a href="cancel_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Cancel</a>
+                    </div>
                 </td>
+
                 
             </tr>
         <?php endforeach; ?>

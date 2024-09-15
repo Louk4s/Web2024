@@ -388,3 +388,16 @@ select[multiple] {
     text-align: center; /* Center the button horizontally */
     margin-bottom: 20px; /* Adds space below the container */
 }
+
+/* Update for task action buttons inside table */
+.table-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.table-actions a.button {
+    font-size: 14px;
+    padding: 5px 10px;
+}
+
