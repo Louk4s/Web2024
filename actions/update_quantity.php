@@ -48,11 +48,11 @@ $conn->close();
 
     <!-- Success Message -->
     <?php if ($successMessage): ?>
-        <p class="success"><?php echo $successMessage; ?></p>
+        <div class="message"><?php echo $successMessage; ?></div> <!-- Use the "message" class for success messages -->
     <?php endif; ?>
 
     <?php if (isset($error)): ?>
-        <p class="error"><?php echo $error; ?></p>
+        <div class="error-message"><?php echo $error; ?></div> <!-- Use the "error-message" class for error messages -->
     <?php endif; ?>
 
     <form method="POST" action="">
