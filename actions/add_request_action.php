@@ -9,17 +9,27 @@ include '../db_connect.php';
 
 // Validate form inputs
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Debugging: Output the raw POST data
-    echo '<pre>';
-    print_r($_POST);
-    echo '</pre>';
-
+    // Capture the input values
     $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
     $people_count = isset($_POST['people_count']) ? intval($_POST['people_count']) : 0;
 
-    // Ensure the item_id and people_count are valid
-    if ($item_id == 0 || $people_count <= 0) {
-        die("Error: Invalid item or people count.");
+    //Ensure the item_id is valid and people_count is valid
+    if ( $item_id == 0 && $people_count <= 0) {
+        $_SESSION['error_message'] = "Error: You did not selected item and the number was below 1. Try again!";
+        header("Location: request_assistance.php");
+        exit();
+    }
+    // Ensure the item_id is valid
+    if ($item_id == 0 ) {
+        $_SESSION['error_message'] = "Error: You did not selected item.Try again!";
+        header("Location: request_assistance.php");
+        exit();
+    }
+    // People_count is valid
+    if ( $people_count <= 0) {
+        $_SESSION['error_message'] = "Error: -Number of people- must be at least 1.Try again!";
+        header("Location: request_assistance.php");
+        exit();
     }
 
     // Fetch the user location based on the session username
@@ -32,22 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user_id = intval($user_row['id']);
         $latitude = $user_row['latitude'];
         $longitude = $user_row['longitude'];
-
-        // Debugging: Ensure the values are correctly fetched
-        echo 'User ID: ' . $user_id . '<br>';
-        echo 'Latitude: ' . $latitude . '<br>';
-        echo 'Longitude: ' . $longitude . '<br>';
     } else {
-        die("Error: User not found.");
+        $_SESSION['error_message'] = "Error: User not found.";
+        header("Location: request_assistance.php");
+        exit();
     }
 
     // Insert the new request into the database
     $status = 'pending'; // Default status for new requests
     $insert_query = "INSERT INTO requests (user_id, item_id, quantity, status, latitude, longitude) 
                      VALUES ('$user_id', '$item_id', '$people_count', '$status', '$latitude', '$longitude')";
-
-    // Debugging: Print the query for troubleshooting
-    echo "SQL Query: " . $insert_query . "<br>";
 
     if ($conn->query($insert_query) === TRUE) {
         $request_id = $conn->insert_id;
@@ -65,8 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: request_assistance.php");
         exit();
     } else {
-        // Debugging: Display the SQL error for better troubleshooting
-        echo "Error: " . $conn->error . "<br>";
+        $_SESSION['error_message'] = "Error: " . $conn->error;
+        header("Location: request_assistance.php");
+        exit();
     }
 }
 

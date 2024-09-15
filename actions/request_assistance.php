@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
     header("Location: ../login.php");
@@ -28,8 +28,7 @@ $conn->close();
 
     <!-- References to the external CSS file -->
     <link rel="stylesheet" href="../style/request_assistance.css">
-     <link rel="stylesheet" href="../style/styles.css">
-
+    <link rel="stylesheet" href="../style/styles.css">
 
     <!-- Reference to Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -38,21 +37,25 @@ $conn->close();
 <div class="container">
     <h2>Request Assistance</h2>
 
+    <?php if (isset($_SESSION['error_message'])): ?>
+    <div class="error" style="color: red;">
+        <p><?php echo $_SESSION['error_message']; ?></p>
+    </div>
+    <?php unset($_SESSION['error_message']); // Remove error after displaying ?>
+    <?php endif; ?>
 
     <?php if (isset($_SESSION['success_message'])): ?>
-    <div class="message">
+    <div class="message" style="color: green;">
         <p><?php echo $_SESSION['success_message']; ?></p>
     </div>
-    <?php unset($_SESSION['success_message']); ?>
-<?php endif; ?>
-
-
+    <?php unset($_SESSION['success_message']); // Remove success message after displaying ?>
+    <?php endif; ?>
 
     <!-- Form to create a new request -->
     <form action="../actions/add_request_action.php" method="POST">
         <div class="form-group">
             <label for="category_id">Select Category:</label>
-            <select id="category_id" class="form-control" style="width: 100%;">
+            <select id="category_id" name="category_id" class="form-control" style="width: 100%;">
                 <option value="">-- Select Category --</option>
                 <?php foreach ($categories as $category): ?>
                     <option value="<?php echo $category['id']; ?>"><?php echo $category['category_name']; ?></option>
