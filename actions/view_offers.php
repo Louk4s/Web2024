@@ -150,7 +150,7 @@ $conn->close();
                             <a href="view_offers.php?cancel_offer_id=<?php echo $offer['id']; ?>" class="button">Cancel Offer</a>
                         <?php elseif ($offer['status'] == 'completed'): ?>
                             <a href="view_offers.php?delete_offer_id=<?php echo $offer['id']; ?>" class="button">Delete Offer</a>
-                            <?php elseif ($offer['status'] == ''): ?>
+                            <?php elseif ($offer['status'] == 'in_progress'): ?>
                                 <span class="disabled-action">Cannot cancel or delete when in progress</span>
                         <?php endif; ?>
                     </td>
