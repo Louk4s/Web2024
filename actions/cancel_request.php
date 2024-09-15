@@ -4,7 +4,7 @@ include '../db_connect.php';
 
 // Ensure the user is logged in as a citizen
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
-    header("HTTP/1.1 403 Forbidden");
+    header("Location: ../login.php");
     exit();
 }
 
