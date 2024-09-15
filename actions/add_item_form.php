@@ -81,11 +81,11 @@ $conn->close();
 
     <!-- Display of success or error message -->
     <?php if ($success_message): ?>
-        <div class="success-message"><?php echo $success_message; ?></div>
+        <div class="message"><?php echo $success_message; ?></div> <!-- Use the "message" class for success messages -->
     <?php endif; ?>
 
     <?php if ($error_message): ?>
-        <div class="error-message"><?php echo $error_message; ?></div>
+        <div class="error-message"><?php echo $error_message; ?></div> <!-- Use the "error-message" class for error messages -->
     <?php endif; ?>
 
     <!-- Add product form -->
@@ -122,5 +122,3 @@ $conn->close();
 
 </body>
 </html>
-
-
