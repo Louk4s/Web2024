@@ -15,7 +15,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
 </head>
 <body>
 <div class="container centered">
-    <h2>Admin Dashboard</h2>
+    <h2>Welcome, <?php echo $_SESSION['username']; ?> (Admin)</h2>
     
     <!-- Admin menu -->
     <ul class="admin-menu">
@@ -30,7 +30,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
         <li><a href="../actions/statistics.php">Statistics</a></li>
     </ul>
     
-    <a href="../logout.php" class="logout">Logout</a>
+    <a href="../logout.php" class="back-button">Logout</a>
 </div>
 </body>
 </html>

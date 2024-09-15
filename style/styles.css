@@ -298,19 +298,20 @@ a:hover {
 .back-button:hover {
     background-color: #d62c1a; /* Darker red when hovered */
 }
-
 .add-button {
     display: inline-block;
-    background: #35424a;
-    color: #ffffff;
-    padding: 10px 20px;
-    text-decoration: none;
-    cursor: pointer;
-    margin-bottom: 20px;
+    background-color: #35424a; /* Dark background */
+    color: #ffffff; /* White text */
+    padding: 10px 20px; /* Padding for button size */
+    text-decoration: none; /* Remove underline */
+    border-radius: 5px; /* Rounded corners */
+    margin-bottom: 20px; /* Space below the button */
+    font-size: 16px;
 }
 
 .add-button:hover {
-    background: #e8491d;
+    background-color: #e8491d; /* Change background color on hover */
+    color: #ffffff; /* Ensure white text on hover */
 }
 
 .custom-popup {

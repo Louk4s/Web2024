@@ -106,10 +106,10 @@ $conn->close();
 
     <!-- Success Message -->
     <?php if ($success_message): ?>
-        <div class="success-message"><?php echo $success_message; ?></div> <!-- Styled message from CSS -->
+        <div class="message"><?php echo $success_message; ?></div> <!-- Styled message from CSS -->
     <?php endif; ?>
-
-    <a href="add_item_form.php"><button>Add New Item</button></a>
+    
+    <a href="add_item_form.php" class="add-button">Add New Item</a>
 
     <!-- Update Inventory Button -->
     <form action="../actions/update_inventory.php" method="POST">
