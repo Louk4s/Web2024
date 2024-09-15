@@ -59,26 +59,23 @@ if ($offers_result && $offers_result->num_rows > 0) {
 if (isset($_GET['cancel_offer_id'])) {
     $offer_id = intval($_GET['cancel_offer_id']);
     
-    // First delete the offer only if the status is 'pending'
     $cancel_offer_sql = "DELETE FROM offers WHERE id = $offer_id AND user_id = $user_id AND status = 'pending'";
     if ($conn->query($cancel_offer_sql)) {
-        
-        // Also delete the corresponding tasks with the same offer_id from the tasks table
         $delete_tasks_sql = "DELETE FROM tasks WHERE offer_id = $offer_id";
-        $conn->query($delete_tasks_sql); // Execute the deletion query for tasks linked to this offer
+        $conn->query($delete_tasks_sql);
 
-        // Additional step: Delete tasks where both request_id and offer_id are NULL
         $delete_null_tasks_sql = "DELETE FROM tasks WHERE offer_id IS NULL AND request_id IS NULL";
-        $conn->query($delete_null_tasks_sql); // Delete tasks where both offer_id and request_id are NULL
+        $conn->query($delete_null_tasks_sql);
 
         $_SESSION['success_message'] = 'Offer and associated tasks successfully canceled.';
     } else {
         $_SESSION['error_message'] = 'Unable to cancel the offer.';
     }
-
+    
     header("Location: view_offers.php");
     exit();
 }
+
 
 // Handle deletion of completed offer
 if (isset($_GET['delete_offer_id'])) {

@@ -1,0 +1,14 @@
+.cancel-btn {
+        display: inline-block;
+        background: #35424a;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .cancel-btn:hover {
+        background: #e8491d;
+    }
+
