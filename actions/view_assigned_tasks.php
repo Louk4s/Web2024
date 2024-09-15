@@ -120,7 +120,7 @@ $conn->close();
             <th>Phone</th>
             <th>Offers/Request</th>
             <th>Action</th>
-            <th>Locate on Map</th>
+            
         </tr>
         <?php foreach ($pending_tasks as $task): ?>
             <tr>
@@ -168,7 +168,7 @@ $conn->close();
             <th>Offers/Request</th>
             <th>Registered On</th>
             <th>Action</th>
-            <th>Locate on Map</th>
+            
         </tr>
         <?php foreach ($in_progress_tasks as $task): ?>
             <tr>
@@ -201,9 +201,7 @@ $conn->close();
                     <a href="complete_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Complete Task</a>
                     <a href="cancel_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Cancel</a>
                 </td>
-                <td>
-                    <button class="locate-btn" data-lat="<?php echo $task['latitude']; ?>" data-lng="<?php echo $task['longitude']; ?>">Locate on Map</button>
-                </td>
+                
             </tr>
         <?php endforeach; ?>
     </table>

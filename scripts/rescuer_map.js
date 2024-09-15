@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var map = L.map('mapContainer').setView([rescuerLocation.latitude, rescuerLocation.longitude], 13);
 
-    var baseMarker;
-    var rescuerMarker;
+    var baseMarker, rescuerMarker, circle, isInsideCircle = false;
     var newLatLng = null;
     var taskMarkers = {};  // Object to store markers for each task
 
@@ -10,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Load the base marker so the rescuer can see it
+    // Load the base marker and draw a 100m circle around it
     function loadBaseMarker(baseData) {
         baseMarker = L.marker([baseData.latitude, baseData.longitude], {
             icon: L.icon({
@@ -20,12 +19,49 @@ document.addEventListener('DOMContentLoaded', function () {
             }),
             draggable: false
         }).addTo(map).bindPopup('Base Location');
+
+        // Draw the 100m radius circle around the base
+        circle = L.circle([baseData.latitude, baseData.longitude], {
+            color: 'blue',
+            fillColor: '#add8e6',
+            fillOpacity: 0.3,
+            radius: 100  // Radius in meters
+        }).addTo(map);
+    }
+
+    // Check if the rescuer is within the 100m circle
+    function checkIfInsideCircle() {
+        if (circle && rescuerMarker) {
+            var rescuerLatLng = rescuerMarker.getLatLng();
+            var distance = map.distance(circle.getLatLng(), rescuerLatLng);  // Distance in meters
+            isInsideCircle = (distance <= circle.getRadius());
+            return isInsideCircle;
+        }
+        return false;
+    }
+
+    // Function to update session variable isInsideCircle
+    function updateSessionCircle(isInside) {
+        fetch('../actions/update_circle_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isInsideCircle: isInside })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('Failed to update session.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
 
     // Cluster group for markers
     var markers = L.markerClusterGroup();
 
-    // Fetch the base location and add it to the map
+    // Fetch the base location and tasks and add them to the map
     fetch('../actions/fetch_map_data.php')
         .then(response => response.json())
         .then(data => {
@@ -58,10 +94,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Add action buttons based on task status
                 if (task.status === 'pending') {
-                    // Add "Accept Task" button for pending tasks
                     popupText += `<a href="accept_task.php?task_id=${task.task_id}" class="button">Accept Task</a><br>`;
                 } else if (task.status === 'in_progress' && task.rescuer_id == rescuerLocation.rescuer_id) {
-                    // Add "Complete Task" and "Cancel Task" buttons for in-progress tasks
                     popupText += `<a href="complete_task.php?task_id=${task.task_id}" class="button">Complete Task</a><br>`;
                     popupText += `<a href="cancel_task.php?task_id=${task.task_id}" class="button">Cancel Task</a><br>`;
                 }
@@ -91,10 +125,20 @@ document.addEventListener('DOMContentLoaded', function () {
             iconSize: [30, 30],
             iconAnchor: [15, 30]
         }),
-        draggable: false
+        draggable: false // Enable dragging for rescuer marker
     }).addTo(map);
 
-    // Fetch rescuer tasks and display in rescuer popup
+    // When the marker is dragged, update the session and check if inside the circle
+    rescuerMarker.on('dragend', function (event) {
+        newLatLng = event.target.getLatLng();
+        if (checkIfInsideCircle()) {
+            updateSessionCircle(true);  // Inside the circle
+        } else {
+            updateSessionCircle(false);  // Outside the circle
+        }
+    });
+
+    // Fetch rescuer tasks and display in rescuer popup with circle check
     fetch('../actions/fetch_rescuer_tasks.php?rescuer_id=' + rescuerLocation.rescuer_id)
         .then(response => response.json())
         .then(data => {
@@ -107,21 +151,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 <b>Details:</b><br>${taskDetails}<br>
                 <a href="view_trucks_inventory.php" class="button">See Inventory</a>
             `;
-            rescuerMarker.bindPopup(rescuerPopupText).openPopup(); // Automatically open the rescuer popup
+
+            // Check if rescuer is inside the circle and display relevant message
+            if (checkIfInsideCircle()) {
+                rescuerPopupText += `<br><b>Note:</b> You are inside the base area and can access inventory.`;
+            } else {
+                rescuerPopupText += `<br><b>Note:</b> You are outside the base area and cannot access inventory.`;
+            }
+
+            rescuerMarker.bindPopup(rescuerPopupText).openPopup();  // Automatically open the rescuer popup
         })
         .catch(error => console.error('Error fetching rescuer tasks:', error));
-
-    // "Locate on Map" functionality
-    document.querySelectorAll('.locate-btn').forEach(function (button) {
-        button.addEventListener('click', function () {
-            var taskId = this.getAttribute('data-task-id');
-            var taskMarker = taskMarkers[taskId];
-            if (taskMarker) {
-                map.setView(taskMarker.getLatLng(), 15); // Zoom into the task marker
-                taskMarker.openPopup(); // Open the popup for the selected marker
-            }
-        });
-    });
 
     // Button to move the rescuer marker
     document.getElementById('moveMarkerBtn').addEventListener('click', function () {
@@ -153,6 +193,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert("Rescuer location updated successfully!");
                     rescuerMarker.setLatLng(newLatLng);
                     rescuerMarker.dragging.disable();
+
+                    // Re-check circle status after moving marker
+                    if (checkIfInsideCircle()) {
+                        updateSessionCircle(true);
+                    } else {
+                        updateSessionCircle(false);
+                    }
                 } else {
                     alert("Error updating rescuer location.");
                 }
