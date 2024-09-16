@@ -124,7 +124,7 @@ $conn->close();
         <input type="submit" value="Unload Selected Items">
     </form>
 
-    <a href="../dashboards/rescuer_dashboard.php" class="back-button">Back to Dashboard</a>
+    <a href="../dashboards/rescuer_dashboard.php" class="back-button">Back to Rescuer Dashboard</a>
 </div>
 </body>
 </html>

@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var baseMarker, rescuerMarker, circle, isInsideCircle = false;
     var newLatLng = null;
     var taskMarkers = {};  // Object to store markers for each task
+    var offerMarkers = [];
+    var pendingRequestMarkers = [];
+    var inProgressRequestMarkers = [];
+    var taskLines = [];  // Store lines to active tasks
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -62,61 +66,97 @@ document.addEventListener('DOMContentLoaded', function () {
     var markers = L.markerClusterGroup();
 
     // Fetch the base location and tasks and add them to the map
-    fetch('../actions/fetch_map_data.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.base) {
-                loadBaseMarker(data.base);
-            } else {
-                console.error("Base location not found in the response");
-            }
+    function fetchAndRenderTasks() {
+        // Clear existing lines before re-rendering
+        taskLines.forEach(line => map.removeLayer(line));
+        taskLines = [];  // Reset task lines
 
-            // Add task markers with popup information
-            data.tasks.forEach(function (task) {
-                var taskIconUrl;
-                var popupText = '';
-
-                // Set the appropriate icon and display task type
-                if (task.task_type === 'offer') {
-                    taskIconUrl = task.status === 'pending' ? '../icons/pending_offer_icon.png' : '../icons/inprogress_offer_icon.png';
-                    popupText += `<b>Task Type:</b> Offer<br>`;
+        fetch('../actions/fetch_map_data.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.base) {
+                    loadBaseMarker(data.base);
                 } else {
-                    taskIconUrl = task.status === 'pending' ? '../icons/pending_request_icon.png' : '../icons/inprogress_request_icon.png';
-                    popupText += `<b>Task Type:</b> Request<br>`;
+                    console.error("Base location not found in the response");
                 }
 
-                // Add task details to the popup
-                popupText += `<b>Citizen:</b> ${task.citizen_name || 'Unknown'}<br>`;
-                popupText += `<b>Phone:</b> ${task.citizen_phone || 'Unknown'}<br>`;
-                popupText += `<b>Registered On:</b> ${task.registered_on || 'Unknown'}<br>`;
-                popupText += `<b>Items:</b> ${task.items || 'Unknown'}<br>`;
-                popupText += `<b>Status:</b> ${task.status || 'Unknown'}<br>`;
+                // Add task markers with popup information
+                data.tasks.forEach(function (task) {
+                    var taskIconUrl;
+                    var popupText = '';
 
-                // Add action buttons based on task status
-                if (task.status === 'pending') {
-                    popupText += `<a href="accept_task.php?task_id=${task.task_id}" class="button">Accept Task</a><br>`;
-                } else if (task.status === 'in_progress' && task.rescuer_id == rescuerLocation.rescuer_id) {
-                    popupText += `<a href="complete_task.php?task_id=${task.task_id}" class="button">Complete Task</a><br>`;
-                    popupText += `<a href="cancel_task.php?task_id=${task.task_id}" class="button">Cancel Task</a><br>`;
-                }
+                    // Determine the correct icon based on task type and status
+                    if (task.task_type === 'offer') {
+                        taskIconUrl = task.status === 'pending' 
+                            ? '../icons/pending_offer_icon.png' 
+                            : '../icons/inprogress_offer_icon.png';
+                        popupText += `<b>Task Type:</b> Offer<br>`;
+                    } else if (task.task_type === 'request') {
+                        taskIconUrl = task.status === 'pending' 
+                            ? '../icons/pending_request_icon.png' 
+                            : '../icons/inprogress_request_icon.png';
+                        popupText += `<b>Task Type:</b> Request<br>`;
+                    }
 
-                // Add the task marker
-                var taskMarker = L.marker([task.latitude, task.longitude], {
-                    icon: L.icon({
-                        iconUrl: taskIconUrl,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 30]
-                    })
-                }).bindPopup(popupText);
+                    // Add task details to the popup
+                    popupText += `<b>Citizen:</b> ${task.citizen_name || 'Unknown'}<br>`;
+                    popupText += `<b>Phone:</b> ${task.citizen_phone || 'Unknown'}<br>`;
+                    popupText += `<b>Registered On:</b> ${task.registered_on || 'Unknown'}<br>`;
+                    popupText += `<b>Items:</b> ${task.items || 'Unknown'}<br>`;
+                    popupText += `<b>Status:</b> ${task.status || 'Unknown'}<br>`;
 
-                // Store the marker for future reference
-                taskMarkers[task.task_id] = taskMarker;
-                markers.addLayer(taskMarker);
-            });
+                    // Add action buttons based on task status
+                    if (task.status === 'pending') {
+                        // Only the rescuer can accept a pending task
+                        popupText += `<a href="#" class="button accept-task" data-task-id="${task.task_id}">Accept Task</a><br>`;
+                    } else if (task.status === 'in_progress') {
+                        // Show different actions based on whether the task is assigned to this rescuer or not
+                        if (task.rescuer_id == rescuerLocation.rescuer_id) {
+                            // If this rescuer is assigned to the task, show complete/cancel options
+                            popupText += `<b>Assigned to:</b> You<br>`;
+                            popupText += `<a href="complete_task.php?task_id=${task.task_id}" class="button">Complete Task</a><br>`;
+                            popupText += `<a href="cancel_task.php?task_id=${task.task_id}" class="button">Cancel Task</a><br>`;
 
-            map.addLayer(markers); // Add the clustered markers to the map
-        })
-        .catch(error => console.error('Error fetching map data:', error));
+                            // Draw a line from the rescuer to the task location if it's in progress
+                            let line = L.polyline([[rescuerLocation.latitude, rescuerLocation.longitude], [task.latitude, task.longitude]], {
+                                color: 'blue'
+                            });
+                            taskLines.push(line);
+                            map.addLayer(line);  // Show the line on the map
+                        } else {
+                            // Display which rescuer is handling the task if it's in progress
+                            popupText += `<b>Assigned to:</b> ${task.rescuer_name || 'Unknown'}<br>`;
+                        }
+                    }
+
+                    // Add the task marker to the map
+                    var taskMarker = L.marker([task.latitude, task.longitude], {
+                        icon: L.icon({
+                            iconUrl: taskIconUrl,
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 30]
+                        })
+                    }).bindPopup(popupText);
+
+                    taskMarkers[task.task_id] = taskMarker;
+
+                    if (task.task_type === 'offer') {
+                        offerMarkers.push(taskMarker);
+                    } else if (task.status === 'pending') {
+                        pendingRequestMarkers.push(taskMarker);
+                    } else if (task.status === 'in_progress') {
+                        inProgressRequestMarkers.push(taskMarker);
+                    }
+
+                    markers.addLayer(taskMarker);
+                });
+
+                map.addLayer(markers); // Add the clustered markers to the map
+            })
+            .catch(error => console.error('Error fetching map data:', error));
+    }
+
+    fetchAndRenderTasks();
 
     // Rescuer marker
     rescuerMarker = L.marker([rescuerLocation.latitude, rescuerLocation.longitude], {
@@ -138,30 +178,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Fetch rescuer tasks and display in rescuer popup with circle check
-    fetch('../actions/fetch_rescuer_tasks.php?rescuer_id=' + rescuerLocation.rescuer_id)
-        .then(response => response.json())
-        .then(data => {
-            var taskCount = data.tasks.length;
-            var taskDetails = data.tasks.map(task => `${task.task_type}: ${task.items}`).join('<br>');
+    // Accept task functionality
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('accept-task')) {
+            e.preventDefault();
+            let taskId = e.target.getAttribute('data-task-id');
 
-            var rescuerPopupText = `
-                <b>Rescuer:</b> ${rescuerLocation.rescuer_name}<br>
-                <b>Tasks:</b> ${taskCount}<br>
-                <b>Details:</b><br>${taskDetails}<br>
-                <a href="view_trucks_inventory.php" class="button">See Inventory</a>
-            `;
-
-            // Check if rescuer is inside the circle and display relevant message
-            if (checkIfInsideCircle()) {
-                rescuerPopupText += `<br><b>Note:</b> You are inside the base area and can access inventory.`;
-            } else {
-                rescuerPopupText += `<br><b>Note:</b> You are outside the base area and cannot access inventory.`;
-            }
-
-            rescuerMarker.bindPopup(rescuerPopupText).openPopup();  // Automatically open the rescuer popup
-        })
-        .catch(error => console.error('Error fetching rescuer tasks:', error));
+            // Send request to accept the task
+            fetch(`accept_task.php?task_id=${taskId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Task accepted successfully!');
+                        // Re-fetch tasks and update the map
+                        fetchAndRenderTasks();
+                    } else {
+                        alert('Error accepting task');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    });
 
     // Button to move the rescuer marker
     document.getElementById('moveMarkerBtn').addEventListener('click', function () {
@@ -208,4 +245,60 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('Move your marker first before saving.');
         }
     });
+
+    // Apply initial filter state
+    applyFilterState();
+
+    // Filter functionality
+    document.getElementById('toggleFilters').addEventListener('click', function () {
+        let filterContainer = document.getElementById('filterContainer');
+        if (filterContainer.style.display === 'none') {
+            filterContainer.style.display = 'block';
+            this.textContent = 'Hide Filters';
+        } else {
+            filterContainer.style.display = 'none';
+            this.textContent = 'Show Filters';
+        }
+    });
+
+    // Apply filter state based on checkboxes
+    function applyFilterState() {
+        let showOffers = document.getElementById('showOffers').checked;
+        let showRequestsPending = document.getElementById('showRequestsPending').checked;
+        let showRequestsInProgress = document.getElementById('showRequestsInProgress').checked;
+        let showTaskLines = document.getElementById('showTaskLines').checked;
+
+        toggleMarkers(offerMarkers, showOffers);
+        toggleMarkers(pendingRequestMarkers, showRequestsPending);
+        toggleMarkers(inProgressRequestMarkers, showRequestsInProgress);
+        toggleLines(taskLines, showTaskLines);
+    }
+
+    // Toggle marker visibility
+    function toggleMarkers(markerArray, isChecked) {
+        markerArray.forEach(function (marker) {
+            if (isChecked) {
+                map.addLayer(marker);
+            } else {
+                map.removeLayer(marker);
+            }
+        });
+    }
+
+    // Toggle line visibility
+    function toggleLines(lineArray, isChecked) {
+        lineArray.forEach(function (line) {
+            if (isChecked) {
+                map.addLayer(line);
+            } else {
+                map.removeLayer(line);
+            }
+        });
+    }
+
+    // Add event listeners for the checkboxes
+    document.getElementById('showOffers').addEventListener('change', applyFilterState);
+    document.getElementById('showRequestsPending').addEventListener('change', applyFilterState);
+    document.getElementById('showRequestsInProgress').addEventListener('change', applyFilterState);
+    document.getElementById('showTaskLines').addEventListener('change', applyFilterState);
 });

@@ -106,6 +106,28 @@ $conn->close();
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="../scripts/rescuer_map.js"></script>
+    <style>
+        #filterContainer {
+            display: none;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        .filter-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .filter-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -120,7 +142,6 @@ $conn->close();
             <th>Phone</th>
             <th>Offers/Request</th>
             <th>Action</th>
-            
         </tr>
         <?php foreach ($pending_tasks as $task): ?>
             <tr>
@@ -151,7 +172,6 @@ $conn->close();
                 <td>
                     <a href="accept_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Accept Task</a>
                 </td>
-                
             </tr>
         <?php endforeach; ?>
     </table>
@@ -166,7 +186,6 @@ $conn->close();
             <th>Offers/Request</th>
             <th>Registered On</th>
             <th>Action</th>
-            
         </tr>
         <?php foreach ($in_progress_tasks as $task): ?>
             <tr>
@@ -201,11 +220,20 @@ $conn->close();
                         <a href="cancel_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Cancel</a>
                     </div>
                 </td>
-
-                
             </tr>
         <?php endforeach; ?>
     </table>
+
+    <!-- Filter Button Moved Here -->
+    <button class="filter-button" id="toggleFilters">Show Filters</button>
+
+    <!-- Filter Container (Hidden by default) -->
+    <div id="filterContainer">
+        <label><input type="checkbox" id="showOffers"> Show Offers</label><br>
+        <label><input type="checkbox" id="showRequestsPending"> Show Pending Requests</label><br>
+        <label><input type="checkbox" id="showRequestsInProgress"> Show In-Progress Requests</label><br>
+        <label><input type="checkbox" id="showTaskLines"> Show Lines to Active Tasks</label>
+    </div>
 
     <!-- Map Container -->
     <div id="mapContainer" style="height: 500px; margin-top: 20px;"></div>

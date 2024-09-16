@@ -30,6 +30,7 @@ $selected_category_ids = isset($_GET['category_id']) ? $_GET['category_id'] : []
 
 // Convert selected categories to SQL-friendly format
 $items = [];
+$items_result = null; // Make sure items_result is initialized
 if (!empty($selected_category_ids)) {
     // Ensure that we are working with an array
     if (!is_array($selected_category_ids)) {
@@ -40,19 +41,37 @@ if (!empty($selected_category_ids)) {
     $selected_category_ids = array_map('intval', $selected_category_ids); // Secure the input
     $selected_category_ids_sql = implode(',', $selected_category_ids); // Convert to SQL-friendly format
 
-    $items_result = $conn->query("SELECT items.id, items.name, items.quantity, categories.category_name 
-                                  FROM items 
-                                  JOIN categories ON items.category_id = categories.id 
-                                  WHERE items.category_id IN ($selected_category_ids_sql)
-                                  ORDER BY items.id DESC"); // Changed to DESC
+    // Fetch base inventory and truck inventory
+    $items_result = $conn->query("
+        SELECT i.id, i.name, i.quantity AS base_quantity, c.category_name, 
+               COALESCE(SUM(r.quantity), 0) AS truck_quantity
+        FROM items i
+        LEFT JOIN categories c ON i.category_id = c.id
+        LEFT JOIN (
+            SELECT item_id, SUM(quantity) AS quantity
+            FROM inventory 
+            GROUP BY item_id
+        ) r ON i.id = r.item_id
+        WHERE i.category_id IN ($selected_category_ids_sql)
+        GROUP BY i.id
+        ORDER BY i.id DESC");
 } else {
     // Show all items if no category is selected
-    $items_result = $conn->query("SELECT items.id, items.name, items.quantity, categories.category_name 
-                                  FROM items 
-                                  JOIN categories ON items.category_id = categories.id 
-                                  ORDER BY items.id DESC"); // Changed to DESC
+    $items_result = $conn->query("
+        SELECT i.id, i.name, i.quantity AS base_quantity, c.category_name, 
+               COALESCE(SUM(r.quantity), 0) AS truck_quantity
+        FROM items i
+        LEFT JOIN categories c ON i.category_id = c.id
+        LEFT JOIN (
+            SELECT item_id, SUM(quantity) AS quantity
+            FROM inventory 
+            GROUP BY item_id
+        ) r ON i.id = r.item_id
+        GROUP BY i.id
+        ORDER BY i.id DESC");
 }
 
+// Now check if the query executed successfully
 if ($items_result && $items_result->num_rows > 0) {
     while ($row = $items_result->fetch_assoc()) {
         $items[] = $row;
@@ -136,7 +155,9 @@ $conn->close();
             <th>ID</th>
             <th>Name</th>
             <th>Category</th>
-            <th>Quantity</th>
+            <th>Total Quantity</th>
+            <th>Base Quantity</th>
+            <th>Truck Quantity</th>
             <th>Details</th> <!-- New column for item details -->
             <th>Actions</th>
         </tr>
@@ -146,7 +167,9 @@ $conn->close();
                     <td><?php echo $item['id']; ?></td>
                     <td><?php echo $item['name']; ?></td>
                     <td><?php echo $item['category_name']; ?></td>
-                    <td><?php echo $item['quantity']; ?></td>
+                    <td><?php echo $item['base_quantity'] + $item['truck_quantity']; ?></td> <!-- Total Quantity -->
+                    <td><?php echo $item['base_quantity']; ?></td> <!-- Quantity in base -->
+                    <td><?php echo $item['truck_quantity']; ?></td> <!-- Quantity in trucks -->
                     <td>
                         <?php echo isset($item_details[$item['id']]) ? $item_details[$item['id']] : 'N/A'; ?>
                     </td> <!-- Display concatenated details -->
@@ -159,7 +182,7 @@ $conn->close();
             <?php endforeach; ?>
         <?php else: ?>
             <tr>
-                <td colspan="6">No items found in this category.</td>
+                <td colspan="8">No items found in this category.</td>
             </tr>
         <?php endif; ?>
     </table>

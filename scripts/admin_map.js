@@ -1,8 +1,11 @@
 document.addEventListener('DOMContentLoaded', (event) => {
     let rescuerMarkers = [];
     let offerMarkers = [];
-    let requestMarkers = [];
+    let pendingRequestMarkers = [];
+    let inProgressRequestMarkers = [];
+    let taskLines = [];
     let map;
+    let markersClusterGroup = L.markerClusterGroup(); // Cluster group for markers
 
     // Initialize map
     function initMap(baseLat, baseLng) {
@@ -52,22 +55,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
                             iconAnchor: [10, 20],
                             popupAnchor: [0, -20]
                         })
-                    }).bindPopup(popupContent).addTo(map);
+                    }).bindPopup(popupContent);
 
-                    rescuerMarkers.push(rescuerMarker);
+                    rescuerMarkers.push({
+                        marker: rescuerMarker,
+                        hasActiveTask: !!activeTask // Flag to determine if the rescuer has an active task
+                    });
+
+                    // Add rescuer marker to the cluster group
+                    markersClusterGroup.addLayer(rescuerMarker);
 
                     // Draw line to active task if available
                     if (activeTask) {
                         let line = L.polyline([[rescuer.latitude, rescuer.longitude], [activeTask.latitude, activeTask.longitude]], {
                             color: 'blue'
-                        }).addTo(map);
+                        });
+                        taskLines.push(line);
                     }
                 }
             });
 
             // Add task markers (offers/requests)
             tasks.forEach(function (task) {
-                let iconUrl = task.task_type === 'offer' ? '../icons/offer-icon.png' : '../icons/request-icon.png';
+                let iconUrl = task.task_type === 'offer' ? '../icons/offer-icon.png' : task.status === 'pending' ? '../icons/pending_request_icon.png' : '../icons/inprogress_request_icon.png';
                 let marker = L.marker([task.latitude, task.longitude], {
                     icon: L.icon({
                         iconUrl: iconUrl,
@@ -79,39 +89,112 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     Task Type: ${task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1)}<br>
                     Citizen: ${task.citizen_name}<br>
                     Phone: ${task.citizen_phone}<br>
-                    Registered On: ${task.created_at}<br>
+                    Accepted On: ${task.collected_at ? task.collected_at : 'Not accepted yet'}<br>
+                    Rescuer: ${task.rescuer_name ? task.rescuer_name : 'Not assigned yet'}<br>
                     Items: ${task.items}<br>
                     Status: ${task.status}
-                `).addTo(map);
+                `);
 
+                // Add task markers to corresponding arrays and cluster group
                 if (task.task_type === 'offer') {
                     offerMarkers.push(marker);
-                } else {
-                    requestMarkers.push(marker);
+                    markersClusterGroup.addLayer(marker);
+                } else if (task.status === 'pending') {
+                    pendingRequestMarkers.push(marker);
+                    markersClusterGroup.addLayer(marker);
+                } else if (task.status === 'in_progress') {
+                    inProgressRequestMarkers.push(marker);
+                    markersClusterGroup.addLayer(marker);
                 }
             });
 
-            // Toggle functionality for markers
-            document.getElementById('showRescuers').addEventListener('change', function () {
-                toggleMarkers(rescuerMarkers, this.checked);
-            });
-            document.getElementById('showOffers').addEventListener('change', function () {
-                toggleMarkers(offerMarkers, this.checked);
-            });
-            document.getElementById('showRequests').addEventListener('change', function () {
-                toggleMarkers(requestMarkers, this.checked);
-            });
+            // Add cluster group to the map
+            map.addLayer(markersClusterGroup);
+
+            // Apply initial visibility based on the default checkbox state
+            applyFilterState();
+
+            // Toggle functionality for markers and lines
+            document.getElementById('showRescuersWithActiveTasks').addEventListener('change', applyFilterState);
+            document.getElementById('showRescuersWithoutActiveTasks').addEventListener('change', applyFilterState);
+            document.getElementById('showOffers').addEventListener('change', applyFilterState);
+            document.getElementById('showRequestsPending').addEventListener('change', applyFilterState);
+            document.getElementById('showRequestsInProgress').addEventListener('change', applyFilterState);
+            document.getElementById('showTaskLines').addEventListener('change', applyFilterState);
         })
         .catch(error => console.error('Error fetching map data:', error));
+
+    // Apply filter state based on checkboxes
+    function applyFilterState() {
+        let showRescuersWithActiveTasks = document.getElementById('showRescuersWithActiveTasks').checked;
+        let showRescuersWithoutActiveTasks = document.getElementById('showRescuersWithoutActiveTasks').checked;
+        let showOffers = document.getElementById('showOffers').checked;
+        let showRequestsPending = document.getElementById('showRequestsPending').checked;
+        let showRequestsInProgress = document.getElementById('showRequestsInProgress').checked;
+        let showTaskLines = document.getElementById('showTaskLines').checked;
+
+        toggleRescuerMarkers(showRescuersWithActiveTasks, showRescuersWithoutActiveTasks);
+        toggleMarkers(offerMarkers, showOffers);
+        toggleMarkers(pendingRequestMarkers, showRequestsPending);
+        toggleMarkers(inProgressRequestMarkers, showRequestsInProgress);
+        toggleLines(taskLines, showTaskLines);
+    }
 
     // Toggle marker visibility
     function toggleMarkers(markerArray, isChecked) {
         markerArray.forEach(function (marker) {
             if (isChecked) {
-                map.addLayer(marker);
+                markersClusterGroup.addLayer(marker); // Add marker to cluster group
             } else {
-                map.removeLayer(marker);
+                markersClusterGroup.removeLayer(marker); // Remove marker from cluster group
             }
         });
     }
+
+    // Toggle visibility for rescuers based on their active task status
+    function toggleRescuerMarkers(showWithActiveTasks, showWithoutActiveTasks) {
+        rescuerMarkers.forEach(function (rescuer) {
+            if (rescuer.hasActiveTask && showWithActiveTasks) {
+                markersClusterGroup.addLayer(rescuer.marker); // Add rescuer marker to cluster
+            } else if (!rescuer.hasActiveTask && showWithoutActiveTasks) {
+                markersClusterGroup.addLayer(rescuer.marker); // Add rescuer marker to cluster
+            } else {
+                markersClusterGroup.removeLayer(rescuer.marker); // Remove rescuer marker from cluster
+            }
+        });
+    }
+
+    // Toggle line visibility
+    function toggleLines(lineArray, isChecked) {
+        lineArray.forEach(function (line) {
+            if (isChecked) {
+                map.addLayer(line);
+            } else {
+                map.removeLayer(line);
+            }
+        });
+    }
+
+    // Toggle filter visibility
+    document.getElementById('toggleFilters').addEventListener('click', function () {
+        let filterContainer = document.getElementById('filterContainer');
+        if (filterContainer.style.display === 'none') {
+            filterContainer.style.display = 'block';
+            this.textContent = 'Hide Filters';
+        } else {
+            filterContainer.style.display = 'none';
+            this.textContent = 'Show Filters';
+        }
+    });
+
+    // Ensure all checkboxes are checked on page load
+    document.getElementById('showRescuersWithActiveTasks').checked = true;
+    document.getElementById('showRescuersWithoutActiveTasks').checked = true;
+    document.getElementById('showOffers').checked = true;
+    document.getElementById('showRequestsPending').checked = true;
+    document.getElementById('showRequestsInProgress').checked = true;
+    document.getElementById('showTaskLines').checked = true;
+
+    // Apply the filter state on page load to show all markers
+    applyFilterState();
 });
