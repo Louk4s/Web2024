@@ -80,7 +80,7 @@ $conn->close();
     </form>
 
     <!-- Back to Dashboard Button -->
-    <a href="citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a> <!-- Adjusted path -->
+    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a> <!-- Adjusted path -->
 </div>
 
 <!-- Reference to jQuery -->
