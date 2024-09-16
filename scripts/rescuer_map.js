@@ -88,8 +88,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (task.rescuer_id == rescuerLocation.rescuer_id) {
                             // If this rescuer is assigned to the task, show complete/cancel options
                             popupText += `<b>Assigned to:</b> You<br>`;
-                            popupText += `<a href="complete_task.php?task_id=${task.task_id}" class="button">Complete Task</a><br>`;
-                            popupText += `<a href="cancel_task.php?task_id=${task.task_id}" class="button">Cancel Task</a><br>`;
+                            popupText += `<a href="complete_task.php?task_id=${task.task_id}" class="button complete-task">Complete Task</a><br>`;
+                            popupText += `<a href="cancel_task.php?task_id=${task.task_id}" class="button cancel-task">Cancel Task</a><br>`;
 
                             // Draw a line from the rescuer to the task location
                             let line = L.polyline([[rescuerLocation.latitude, rescuerLocation.longitude], [task.latitude, task.longitude]], {
@@ -198,7 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Accept task functionality
     document.addEventListener('click', function (e) {
         if (e.target.classList.contains('accept-task')) {
-            e.preventDefault();
+            e.preventDefault();  // Prevent page scroll
+
             let taskId = e.target.getAttribute('data-task-id');
 
             // Send request to accept the task
@@ -217,19 +218,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Complete and Cancel task functionality
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('complete-task') || e.target.classList.contains('cancel-task')) {
+            e.preventDefault();  // Prevent page scroll
+        }
+    });
+
     // Button to move the rescuer marker
-    document.getElementById('moveMarkerBtn').addEventListener('click', function () {
+    document.getElementById('moveMarkerBtn').addEventListener('click', function (e) {
+        e.preventDefault();  // Prevent page scroll
         rescuerMarker.dragging.enable();
         alert('You can now move your marker. Once done, press "Save Location" to confirm.');
-
-        rescuerMarker.on('dragend', function (event) {
-            newLatLng = event.target.getLatLng();
-            alert('New location selected. Click "Save Location" to confirm.');
-        });
     });
 
     // Button to save the new marker position
-    document.getElementById('saveMarkerBtn').addEventListener('click', function () {
+    document.getElementById('saveMarkerBtn').addEventListener('click', function (e) {
+        e.preventDefault();  // Prevent page scroll
         if (newLatLng) {
             fetch('../actions/update_rescuer_location.php', {
                 method: 'POST',
@@ -317,3 +322,4 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('showRequestsInProgress').addEventListener('change', applyFilterState);
     document.getElementById('showTaskLines').addEventListener('change', applyFilterState);
 });
+
