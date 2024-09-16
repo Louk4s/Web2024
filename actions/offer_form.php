@@ -81,7 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $conn->close();
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,6 +88,18 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Offer</title>
     <link rel="stylesheet" href="../style/styles.css"> <!-- Ensure this CSS file contains the correct styles -->
+    <script>
+        function toggleQuantityInput(checkbox, input) {
+            if (checkbox.checked) {
+                input.required = true; // Make quantity input required
+                input.disabled = false; // Enable the input
+            } else {
+                input.required = false; // Make quantity input optional
+                input.disabled = true; // Disable the input
+                input.value = ''; // Clear the input when unchecked
+            }
+        }
+    </script>
 </head>
 <body>
 <div class="container">
@@ -119,11 +130,14 @@ $conn->close();
                     <?php foreach ($items as $item): ?>
                         <tr>
                             <td>
-                                <input type="checkbox" name="items[]" value="<?php echo $item['id']; ?>" checked>
+                                <input type="checkbox" name="items[]" value="<?php echo $item['id']; ?>"
+                                    id="item_<?php echo $item['id']; ?>"
+                                    onchange="toggleQuantityInput(this, document.getElementById('quantity_<?php echo $item['id']; ?>'))">
                                 <?php echo $item['name']; ?>
                             </td>
                             <td class="item-quantity">
-                                <input type="number" name="quantities[]" min="1" placeholder="Quantity" style="width: 60px;" required>
+                                <input type="number" id="quantity_<?php echo $item['id']; ?>" name="quantities[]" 
+                                       min="1" placeholder="Quantity" style="width: 60px;" disabled>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -140,4 +154,3 @@ $conn->close();
 </div>
 </body>
 </html>
-
