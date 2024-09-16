@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const peopleCountInput = document.getElementById('people_count');
     const submitButton = document.querySelector('button[type="submit"]');
 
-   
     // Function to check if all conditions are met
     function checkFormValidity() {
         const selectedCategory = categorySelect.value;
@@ -20,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add event listeners to inputs to trigger form validation
     if (categorySelect && itemSelect && peopleCountInput) {
         categorySelect.addEventListener('change', checkFormValidity);
-        itemSelect.addEventListener('change', checkFormValidity);
+        itemSelect.on('change', checkFormValidity); // Select2 change event
         peopleCountInput.addEventListener('input', checkFormValidity);
     }
 
@@ -31,14 +30,20 @@ document.addEventListener("DOMContentLoaded", function () {
             if (selectedCategory) {
                 fetchItems(selectedCategory);
             } else {
-                itemSelect.innerHTML = '<option value="">-- Select Item --</option>';  // Clear the items
-                itemSelect.disabled = true;
+                // Fetch all items when no category is selected
+                fetchItems(null);
             }
             checkFormValidity(); // Recheck form validity after category selection
         });
 
+        // Fetch items dynamically
         function fetchItems(category) {
-            fetch(`../actions/get_items_by_category.php?category_id=${category}`)
+            let url = '../actions/get_items_by_category.php';
+            if (category !== null) {
+                url += `?category_id=${category}`; // Append category_id if a category is selected
+            }
+
+            fetch(url)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Failed to fetch items: ${response.status}`);
@@ -46,17 +51,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     return response.json();
                 })
                 .then(data => {
-                    itemSelect.innerHTML = '<option value="">-- Select Item --</option>'; // Clear the items list
+                    itemSelect.html('<option value="">-- Select Item --</option>'); // Clear the items list
                     if (data.length > 0) {
                         data.forEach(item => {
-                            const option = document.createElement('option');
-                            option.value = item.id;
-                            option.textContent = item.name;
-                            itemSelect.appendChild(option);
+                            const option = new Option(item.name, item.id, false, false);
+                            itemSelect.append(option);
                         });
-                        itemSelect.disabled = false; // Enable the items list
+                        itemSelect.prop('disabled', false); // Enable the items list
                     } else {
-                        itemSelect.disabled = true; // Disable if no items
+                        itemSelect.prop('disabled', true); // Disable if no items
                     }
                     checkFormValidity(); // Recheck form validity after items are loaded
                 })
@@ -64,6 +67,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.error('Error fetching items:', error);
                 });
         }
+
+        // Fetch all items by default (when page loads and no category is selected)
+        fetchItems(null);
     }
 });
+
+
 

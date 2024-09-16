@@ -53,6 +53,10 @@ $conn->close(); // Close the connection after fetching categories
 
     <!-- Form to create a new request -->
     <form action="add_request_action.php" method="POST"> <!-- Adjusted path -->
+        
+        <!-- Add the instruction text within the form and style it -->
+        <p style="text-align: center; font-size: 16px; color: #333;">You can search directly for the item you want</p>
+
         <div class="form-group">
             <label for="category_id">Select Category:</label>
             <select id="category_id" name="category_id" class="form-control" style="width: 100%;">
@@ -129,6 +133,7 @@ $conn->close(); // Close the connection after fetching categories
 </script>
 </body>
 </html>
+
 
 
 
