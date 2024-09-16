@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var pendingRequestMarkers = [];
     var inProgressRequestMarkers = [];
     var taskLines = [];  // Store lines to active tasks
+    var taskCircles = {};  // Store task completion circles
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -33,43 +34,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }).addTo(map);
     }
 
-    // Check if the rescuer is within the 100m circle
-    function checkIfInsideCircle() {
-        if (circle && rescuerMarker) {
-            var rescuerLatLng = rescuerMarker.getLatLng();
-            var distance = map.distance(circle.getLatLng(), rescuerLatLng);  // Distance in meters
-            isInsideCircle = (distance <= circle.getRadius());
-            return isInsideCircle;
-        }
-        return false;
-    }
-
-    // Function to update session variable isInsideCircle
-    function updateSessionCircle(isInside) {
-        fetch('../actions/update_circle_status.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ isInsideCircle: isInside })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                console.error('Failed to update session.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
     // Cluster group for markers
     var markers = L.markerClusterGroup();
 
     // Fetch the base location and tasks and add them to the map
     function fetchAndRenderTasks() {
-        // Clear existing lines before re-rendering
+        // Clear existing lines and circles before re-rendering
         taskLines.forEach(line => map.removeLayer(line));
         taskLines = [];  // Reset task lines
+
+        Object.values(taskCircles).forEach(circle => map.removeLayer(circle));
+        taskCircles = {};  // Reset task completion circles
 
         fetch('../actions/fetch_map_data.php')
             .then(response => response.json())
@@ -110,21 +85,33 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Only the rescuer can accept a pending task
                         popupText += `<a href="#" class="button accept-task" data-task-id="${task.task_id}">Accept Task</a><br>`;
                     } else if (task.status === 'in_progress') {
-                        // Show different actions based on whether the task is assigned to this rescuer or not
                         if (task.rescuer_id == rescuerLocation.rescuer_id) {
                             // If this rescuer is assigned to the task, show complete/cancel options
                             popupText += `<b>Assigned to:</b> You<br>`;
                             popupText += `<a href="complete_task.php?task_id=${task.task_id}" class="button">Complete Task</a><br>`;
                             popupText += `<a href="cancel_task.php?task_id=${task.task_id}" class="button">Cancel Task</a><br>`;
 
-                            // Draw a line from the rescuer to the task location if it's in progress
+                            // Draw a line from the rescuer to the task location
                             let line = L.polyline([[rescuerLocation.latitude, rescuerLocation.longitude], [task.latitude, task.longitude]], {
                                 color: 'blue'
                             });
                             taskLines.push(line);
                             map.addLayer(line);  // Show the line on the map
+
+                            // Draw a 50m circle around the task
+                            let taskCircle = L.circle([task.latitude, task.longitude], {
+                                color: 'green',
+                                fillColor: '#32cd32',
+                                fillOpacity: 0.3,
+                                radius: 50  // Radius in meters (50 meters)
+                            }).addTo(map);
+
+                            taskCircles[task.task_id] = taskCircle;
+
+                            // Check if rescuer is inside the 50m circle
+                            checkIfInsideTaskCircle(taskCircle);
                         } else {
-                            // Display which rescuer is handling the task if it's in progress
+                            // Display which rescuer is handling the task
                             popupText += `<b>Assigned to:</b> ${task.rescuer_name || 'Unknown'}<br>`;
                         }
                     }
@@ -156,6 +143,36 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => console.error('Error fetching map data:', error));
     }
 
+    // Function to check if the rescuer is inside the 50m task circle
+    function checkIfInsideTaskCircle(taskCircle) {
+        if (taskCircle && rescuerMarker) {
+            var rescuerLatLng = rescuerMarker.getLatLng();
+            var distance = map.distance(taskCircle.getLatLng(), rescuerLatLng);  // Distance in meters
+            isInsideCircle = (distance <= taskCircle.getRadius());
+
+            // Update the session variable
+            updateSessionCircleForTask(isInsideCircle);
+        }
+    }
+
+    // Function to update session variable isInsideCircleCitizen
+    function updateSessionCircleForTask(isInside) {
+        fetch('../actions/update_task_circle_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isInsideCircleCitizen: isInside })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('Failed to update session.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
     fetchAndRenderTasks();
 
     // Rescuer marker
@@ -168,14 +185,14 @@ document.addEventListener('DOMContentLoaded', function () {
         draggable: false // Enable dragging for rescuer marker
     }).addTo(map);
 
-    // When the marker is dragged, update the session and check if inside the circle
+    // When the marker is dragged, update the session and check if inside the task circle
     rescuerMarker.on('dragend', function (event) {
         newLatLng = event.target.getLatLng();
-        if (checkIfInsideCircle()) {
-            updateSessionCircle(true);  // Inside the circle
-        } else {
-            updateSessionCircle(false);  // Outside the circle
-        }
+
+        // Check if inside any task circle after dragging
+        Object.values(taskCircles).forEach(circle => {
+            checkIfInsideTaskCircle(circle);
+        });
     });
 
     // Accept task functionality
@@ -232,11 +249,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     rescuerMarker.dragging.disable();
 
                     // Re-check circle status after moving marker
-                    if (checkIfInsideCircle()) {
-                        updateSessionCircle(true);
-                    } else {
-                        updateSessionCircle(false);
-                    }
+                    Object.values(taskCircles).forEach(circle => {
+                        checkIfInsideTaskCircle(circle);
+                    });
                 } else {
                     alert("Error updating rescuer location.");
                 }

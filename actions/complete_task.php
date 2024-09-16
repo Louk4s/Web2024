@@ -5,26 +5,47 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'rescuer') {
     exit();
 }
 
-//check if rescuer is inside the citizen's 50m circle
-if (!isset($_SESSION['isInsideCircleCitizen']) || !$_SESSION['isInsideCircleCitizen']) {
-    echo "You must be within the 50m radius to complete this task.";
-    exit();
-}
 include '../db_connect.php';
 
 if (isset($_GET['task_id'])) {
     $task_id = intval($_GET['task_id']);
     $rescuer_id = $_SESSION['user_id'];
 
-    // Fetch the task type to determine how to handle the inventory
-    $sql_task = "SELECT task_type, request_id, offer_id FROM tasks WHERE task_id = ?";
+    // Fetch the task and request/offer details
+    $sql_task = "SELECT t.task_type, t.request_id, t.offer_id, t.latitude as task_lat, t.longitude as task_lng, r.latitude as rescuer_lat, r.longitude as rescuer_lng 
+                 FROM tasks t
+                 JOIN users r ON r.id = t.rescuer_id
+                 WHERE t.task_id = ?";
     $stmt_task = $conn->prepare($sql_task);
     $stmt_task->bind_param('i', $task_id);
     $stmt_task->execute();
     $task_result = $stmt_task->get_result();
     $task = $task_result->fetch_assoc();
-    
+
     if ($task) {
+        // Calculate the distance between rescuer and task
+        $earth_radius = 6371000; // Earth radius in meters
+
+        // Convert latitude/longitude from degrees to radians
+        $rescuer_lat = deg2rad($task['rescuer_lat']);
+        $rescuer_lng = deg2rad($task['rescuer_lng']);
+        $task_lat = deg2rad($task['task_lat']);
+        $task_lng = deg2rad($task['task_lng']);
+
+        // Haversine formula to calculate the distance
+        $d_lat = $task_lat - $rescuer_lat;
+        $d_lng = $task_lng - $rescuer_lng;
+
+        $a = sin($d_lat / 2) * sin($d_lat / 2) + cos($rescuer_lat) * cos($task_lat) * sin($d_lng / 2) * sin($d_lng / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earth_radius * $c;
+
+        // Check if the rescuer is within the 50m radius
+        if ($distance > 50) {
+            echo "You must be within the 50m radius to complete this task.";
+            exit();
+        }
+
         if ($task['task_type'] == 'request') {
             // Update inventory for request (reduce item quantity)
             $sql_request = "SELECT r.item_id, r.quantity FROM requests r WHERE r.id = ?";
@@ -54,7 +75,7 @@ if (isset($_GET['task_id'])) {
             $offer = $offer_result->fetch_assoc();
 
             if ($offer) {
-                $item_quantities = explode(',', $offer['item_ids']); 
+                $item_quantities = explode(',', $offer['item_ids']);
 
                 foreach ($item_quantities as $item_quantity) {
                     list($item_id, $quantity) = explode(':', $item_quantity);
@@ -84,10 +105,10 @@ if (isset($_GET['task_id'])) {
         }
 
         // Update the task status to 'completed'
-        $sql_update = "UPDATE tasks SET status = 'completed', completed_at = NOW() WHERE task_id = ? AND rescuer_id = ?";
-        $stmt_update = $conn->prepare($sql_update);
-        $stmt_update->bind_param('ii', $task_id, $rescuer_id);
-        $stmt_update->execute();
+        $sql_update_task = "UPDATE tasks SET status = 'completed', completed_at = NOW() WHERE task_id = ? AND rescuer_id = ?";
+        $stmt_update_task = $conn->prepare($sql_update_task);
+        $stmt_update_task->bind_param('ii', $task_id, $rescuer_id);
+        $stmt_update_task->execute();
 
         // Update the status of the corresponding request or offer
         if ($task['task_type'] == 'request') {
@@ -102,6 +123,7 @@ if (isset($_GET['task_id'])) {
             $stmt_update_offer->execute();
         }
 
+        // Redirect to the completed tasks view
         header("Location: view_completed_tasks.php");
         exit();
     }

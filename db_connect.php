@@ -2,7 +2,7 @@
 $servername = "127.0.0.1";
 $db_username = "root"; 
 $db_password = ""; 
-$dbname = "db"; 
+$dbname = "disaster_database"; 
 $port = "3306"; // Specified port for MySQL
 
 // Create connection
