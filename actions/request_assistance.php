@@ -1,11 +1,11 @@
-<?php 
+<?php
 session_start();
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
-    header("Location: ../login.php");
+    header("Location: login.php"); // Adjusted path since it's in the same folder
     exit();
 }
 
-include '../db_connect.php';
+include '../db_connect.php'; // Adjusted path since it's in the same folder
 
 // Fetch categories for the dropdown
 $categories_result = $conn->query("SELECT id, category_name FROM categories");
@@ -27,8 +27,8 @@ $conn->close();
     <title>Request Assistance</title>
 
     <!-- References to the external CSS file -->
-    <link rel="stylesheet" href="../style/request_assistance.css">
-    <link rel="stylesheet" href="../style/styles.css">
+    <link rel="stylesheet" href="../style/request_assistance.css"> <!-- Adjusted path -->
+    <link rel="stylesheet" href="../style/styles.css"> <!-- Adjusted path -->
 
     <!-- Reference to Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -52,7 +52,7 @@ $conn->close();
     <?php endif; ?>
 
     <!-- Form to create a new request -->
-    <form action="../actions/add_request_action.php" method="POST">
+    <form action="add_request_action.php" method="POST"> <!-- Adjusted path -->
         <div class="form-group">
             <label for="category_id">Select Category:</label>
             <select id="category_id" name="category_id" class="form-control" style="width: 100%;">
@@ -80,7 +80,7 @@ $conn->close();
     </form>
 
     <!-- Back to Dashboard Button -->
-    <a href="../dashboards/citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a>
+    <a href="citizen_dashboard.php" class="back-button">Back to Citizen Dashboard</a> <!-- Adjusted path -->
 </div>
 
 <!-- Reference to jQuery -->
@@ -90,8 +90,9 @@ $conn->close();
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <!-- Reference to external JS file for form behavior -->
-<script src="../scripts/request_assistance.js"></script>
+<script src="../scripts/request_assistance.js"></script> <!-- Adjusted path -->
 </body>
 </html>
+
 
 

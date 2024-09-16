@@ -4,9 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const peopleCountInput = document.getElementById('people_count');
     const submitButton = document.querySelector('button[type="submit"]');
 
-    // Disable the submit button initially
-    submitButton.disabled = true;
-
+   
     // Function to check if all conditions are met
     function checkFormValidity() {
         const selectedCategory = categorySelect.value;
@@ -16,9 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Enable the submit button only if all conditions are met
         if (selectedCategory && selectedItem && peopleCount > 0) {
             submitButton.disabled = false;
-        } else {
-            submitButton.disabled = true;
-        }
+        } 
     }
 
     // Add event listeners to inputs to trigger form validation

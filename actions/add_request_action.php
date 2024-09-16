@@ -5,7 +5,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
     exit();
 }
 
-include '../db_connect.php';
+include '../db_connect.php'; // Adjusted path since it's in the same folder
 
 // Validate form inputs
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -13,22 +13,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
     $people_count = isset($_POST['people_count']) ? intval($_POST['people_count']) : 0;
 
-    //Ensure the item_id is valid and people_count is valid
-    if ( $item_id == 0 && $people_count <= 0) {
-        $_SESSION['error_message'] = "Error: You did not selected item and the number was below 1. Try again!";
-        header("Location: request_assistance.php");
+    // Ensure the item_id is valid and people_count is valid
+    if ($item_id == 0 && $people_count <= 0) {
+        $_SESSION['error_message'] = "Error: You did not select an item, and the number of people was below 1. Try again!";
+        session_write_close(); // Ensure session data is saved
+        header("Location: request_assistance.php"); // Adjusted path since it's in the same folder
         exit();
     }
-    // Ensure the item_id is valid
-    if ($item_id == 0 ) {
-        $_SESSION['error_message'] = "Error: You did not selected item.Try again!";
-        header("Location: request_assistance.php");
+
+    if ($item_id == 0) {
+        $_SESSION['error_message'] = "Error: You did not select an item. Try again!";
+        session_write_close(); // Ensure session data is saved
+        header("Location: request_assistance.php"); // Adjusted path
         exit();
     }
-    // People_count is valid
-    if ( $people_count <= 0) {
-        $_SESSION['error_message'] = "Error: -Number of people- must be at least 1.Try again!";
-        header("Location: request_assistance.php");
+
+    if ($people_count <= 0) {
+        $_SESSION['error_message'] = "Error: The number of people must be at least 1. Try again!";
+        session_write_close(); // Ensure session data is saved
+        header("Location: request_assistance.php"); // Adjusted path
         exit();
     }
 
@@ -44,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $longitude = $user_row['longitude'];
     } else {
         $_SESSION['error_message'] = "Error: User not found.";
-        header("Location: request_assistance.php");
+        session_write_close(); // Ensure session data is saved
+        header("Location: request_assistance.php"); // Adjusted path
         exit();
     }
 
@@ -64,16 +68,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Store success message in the session
         $_SESSION['success_message'] = "Request submitted successfully!";
+        session_write_close(); // Ensure session data is saved
         
         // Redirect back to the request assistance page to show the success message
-        header("Location: request_assistance.php");
+        header("Location: request_assistance.php"); // Adjusted path
         exit();
     } else {
         $_SESSION['error_message'] = "Error: " . $conn->error;
-        header("Location: request_assistance.php");
+        session_write_close(); // Ensure session data is saved
+        header("Location: request_assistance.php"); // Adjusted path
         exit();
     }
 }
 
 $conn->close();
 ?>
+
