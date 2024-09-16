@@ -70,4 +70,5 @@ try {
 }
 
 $conn->close();
+
 ?>

@@ -74,7 +74,7 @@ $conn->close();
         <?php endif; ?>
     </table>
 
-    <a href="../dashboards/rescuer_dashboard.php" class="back-button">Back to Dashboard</a>
+    <a href="../dashboards/rescuer_dashboard.php" class="back-button">Back to Rescuer Dashboard</a>
 </div>
 </body>
 </html>
