@@ -3,21 +3,24 @@ include '../db_connect.php'; // Ensure the connection file path is correct
 
 // Check if category_id or category_ids is set
 if (isset($_GET['category_id']) || isset($_GET['category_ids'])) {
+    
     // Handle single category (for request_assistance.php)
     if (isset($_GET['category_id'])) {
         $category_id = intval($_GET['category_id']); // Get the single category ID
+        $search = isset($_GET['search']) ? $_GET['search'] : ''; // Get the search term if available
 
         if ($category_id > 0) {
-            // Query to fetch items that belong to the given category
-            $stmt = $conn->prepare("SELECT id, name FROM items WHERE category_id = ?");
-            $stmt->bind_param('i', $category_id);
+            // Query to fetch items that belong to the given category and match the search term (if provided)
+            $stmt = $conn->prepare("SELECT id, name FROM items WHERE category_id = ? AND name LIKE ?");
+            $searchParam = "%" . $search . "%"; // Prepare the search term for the SQL LIKE clause
+            $stmt->bind_param('is', $category_id, $searchParam); // Bind the category ID and search term
             $stmt->execute();
             $items_result = $stmt->get_result();
 
             if ($items_result && $items_result->num_rows > 0) {
                 $items = [];
                 while ($row = $items_result->fetch_assoc()) {
-                    $items[] = $row;
+                    $items[] = $row; // Store each item in an array
                 }
                 // Return the items in JSON format
                 echo json_encode($items);
@@ -31,6 +34,7 @@ if (isset($_GET['category_id']) || isset($_GET['category_ids'])) {
             echo json_encode(["error" => "Invalid category ID"]);
         }
     }
+    
     // Handle multiple categories (for create_announcement.php)
     else if (isset($_GET['category_ids'])) {
         $category_ids = explode(',', $_GET['category_ids']); // Convert the comma-separated string to an array

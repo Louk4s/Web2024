@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const categorySelect = document.getElementById('category_id');
-    const itemSelect = document.getElementById('item_id');
+    const itemSelect = $('#item_id'); // Select2 dropdown is initialized as jQuery object
     const peopleCountInput = document.getElementById('people_count');
     const submitButton = document.querySelector('button[type="submit"]');
 
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to check if all conditions are met
     function checkFormValidity() {
         const selectedCategory = categorySelect.value;
-        const selectedItem = itemSelect.value;
+        const selectedItem = itemSelect.val(); // Use Select2's jQuery method to get the value
         const peopleCount = peopleCountInput.value;
 
         // Enable the submit button only if all conditions are met

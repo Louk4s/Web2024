@@ -1,11 +1,11 @@
 <?php
 session_start();
 if (!isset($_SESSION['username']) || $_SESSION['role'] != 'citizen') {
-    header("Location: login.php"); // Adjusted path since it's in the same folder
+    header("Location: login.php");
     exit();
 }
 
-include '../db_connect.php'; // Adjusted path since it's in the same folder
+include '../db_connect.php'; // Ensure the connection file path is correct
 
 // Fetch categories for the dropdown
 $categories_result = $conn->query("SELECT id, category_name FROM categories");
@@ -16,7 +16,7 @@ if ($categories_result && $categories_result->num_rows > 0) {
     }
 }
 
-$conn->close();
+$conn->close(); // Close the connection after fetching categories
 ?>
 
 <!DOCTYPE html>
@@ -67,7 +67,6 @@ $conn->close();
             <label for="item_id">Select Item:</label>
             <select name="item_id" id="item_id" class="form-control" style="width: 100%;">
                 <option value="">-- Select Item --</option>
-                <!-- Τα items θα φορτωθούν δυναμικά από την JavaScript -->
             </select>
         </div>
 
@@ -91,8 +90,46 @@ $conn->close();
 
 <!-- Reference to external JS file for form behavior -->
 <script src="../scripts/request_assistance.js"></script> <!-- Adjusted path -->
+
+<!-- Initialize Select2 with Autocomplete -->
+<script>
+    $(document).ready(function() {
+        $('#item_id').select2({
+            placeholder: 'Search for an item...',
+            allowClear: true,
+            ajax: {
+                url: '../actions/get_items_by_category.php',
+                dataType: 'json',
+                delay: 250, // Delay to avoid overloading the server with requests
+                data: function (params) {
+                    return {
+                        category_id: $('#category_id').val(), // Send the selected category ID
+                        search: params.term // Send the search term for autocomplete
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                id: item.id,
+                                text: item.name
+                            };
+                        })
+                    };
+                },
+                cache: true
+            }
+        });
+
+        // Reinitialize Select2 when the category changes
+        $('#category_id').change(function() {
+            $('#item_id').val(null).trigger('change'); // Clear item selection when category changes
+        });
+    });
+</script>
 </body>
 </html>
+
 
 
 
