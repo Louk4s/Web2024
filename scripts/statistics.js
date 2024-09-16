@@ -20,11 +20,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Reformat the dates from dd/mm/yyyy to yyyy-mm-dd for the SQL query
         const formattedStartDate = formatDateForSQL(startDate);
         const formattedEndDate = formatDateForSQL(endDate);
- // Check if end date is before start date
- if (new Date(formattedEndDate) < new Date(formattedStartDate)) {
-    alert('End date cannot be before start date.');
-    return; // Exit the function to prevent further processing
-}
+
+        // Check if end date is before start date
+        if (new Date(formattedEndDate) < new Date(formattedStartDate)) {
+            alert('End date cannot be before start date.');
+            return; // Exit the function to prevent further processing
+        }
         if (formattedStartDate && formattedEndDate) {
             // Fetch data from statistics.php
             fetch('statistics.php', {
@@ -81,11 +82,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 scales: {
                     y: {
                         beginAtZero: true,
+                        ticks: {
+                            stepSize: 1, // Ensure the Y-axis displays whole numbers
+                            precision: 0 // Removes decimal places
+                        },
                         title: {
                             display: true,
                             text: 'Quantity',  // Display "Quantity" label on the y-axis
                             font: {
-                                size: 14
+                                size: 16
                             }
                         }
                     }
@@ -99,6 +104,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+
+
+
+
 
 
 
