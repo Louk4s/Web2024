@@ -34,6 +34,35 @@ document.addEventListener('DOMContentLoaded', function () {
         }).addTo(map);
     }
 
+    // Check if the rescuer is within the 100m base circle
+    function checkIfInsideCircle() {
+        if (circle && rescuerMarker) {
+            var rescuerLatLng = rescuerMarker.getLatLng();
+            var distance = map.distance(circle.getLatLng(), rescuerLatLng);  // Distance in meters
+            isInsideCircle = (distance <= circle.getRadius());
+            return isInsideCircle;
+        }
+        return false;
+    }
+
+    // Function to update session variable isInsideCircle for base circle
+    function updateSessionCircle(isInside) {
+        fetch('../actions/update_circle_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isInsideCircle: isInside })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('Failed to update session for base circle.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
     // Cluster group for markers
     var markers = L.markerClusterGroup();
 
@@ -182,12 +211,19 @@ document.addEventListener('DOMContentLoaded', function () {
             iconSize: [30, 30],
             iconAnchor: [15, 30]
         }),
-        draggable: false // Enable dragging for rescuer marker
+        draggable: true // Enable dragging for rescuer marker
     }).addTo(map);
 
-    // When the marker is dragged, update the session and check if inside the task circle
+    // When the marker is dragged, update the session and check if inside the task circle or base circle
     rescuerMarker.on('dragend', function (event) {
         newLatLng = event.target.getLatLng();
+
+        // Check if inside the base 100m circle
+        if (checkIfInsideCircle()) {
+            updateSessionCircle(true);  // Inside the base circle
+        } else {
+            updateSessionCircle(false);  // Outside the base circle
+        }
 
         // Check if inside any task circle after dragging
         Object.values(taskCircles).forEach(circle => {
@@ -257,6 +293,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     Object.values(taskCircles).forEach(circle => {
                         checkIfInsideTaskCircle(circle);
                     });
+
+                    if (checkIfInsideCircle()) {
+                        updateSessionCircle(true);
+                    } else {
+                        updateSessionCircle(false);
+                    }
                 } else {
                     alert("Error updating rescuer location.");
                 }
@@ -322,4 +364,3 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('showRequestsInProgress').addEventListener('change', applyFilterState);
     document.getElementById('showTaskLines').addEventListener('change', applyFilterState);
 });
-
