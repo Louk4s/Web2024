@@ -41,8 +41,11 @@ if (isset($_GET['task_id'])) {
         $distance = $earth_radius * $c;
 
         // Check if the rescuer is within the 50m radius
+        
         if ($distance > 50) {
-            echo "You must be within the 50m radius to complete this task.";
+            // Set an error message in the session
+            $_SESSION['error_message'] = "You must be within the 50m radius to complete this task.";
+            header("Location: view_assigned_tasks.php");
             exit();
         }
 

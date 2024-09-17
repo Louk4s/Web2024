@@ -196,6 +196,12 @@ $conn->close();
 
     <!-- In-Progress Tasks Table -->
     <h3>In-Progress Tasks</h3>
+    <?php
+    if (isset($_SESSION['error_message'])) {
+        echo '<div style="color: red; font-weight: bold; margin-bottom: 10px;">' . $_SESSION['error_message'] . '</div>';
+        unset($_SESSION['error_message']); // Clear the error message after displaying it
+    }
+    ?>
     <table>
         <tr>
             <th>Task Type</th>
@@ -234,7 +240,8 @@ $conn->close();
                 <td><?php echo $task['registered_on']; ?></td>
                 <td>
                     <div class="table-actions">
-                        <a href="complete_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Complete Task</a>
+                    <a href="complete_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Complete Task</a>
+
                         <a href="cancel_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Cancel</a>
                     </div>
                 </td>
