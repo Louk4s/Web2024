@@ -7,8 +7,28 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'rescuer') {
 
 include '../db_connect.php';
 
-$task_id = isset($_GET['task_id']) ? intval($_GET['task_id']) : 0;
 $rescuer_id = $_SESSION['user_id'];
+$task_id = isset($_GET['task_id']) ? intval($_GET['task_id']) : 0;
+
+// Check the current number of in-progress tasks
+$sql_task_count = "
+    SELECT COUNT(*) AS in_progress_count
+    FROM tasks
+    WHERE status = 'in_progress' AND rescuer_id = ?
+";
+$stmt_task_count = $conn->prepare($sql_task_count);
+$stmt_task_count->bind_param('i', $rescuer_id);
+$stmt_task_count->execute();
+$result_task_count = $stmt_task_count->get_result();
+$in_progress_count = $result_task_count->fetch_assoc()['in_progress_count'];
+
+$stmt_task_count->close();
+
+// If rescuer has 4 or more tasks in-progress, do not allow accepting more tasks
+if ($in_progress_count >= 4) {
+    echo "<script>alert('You have reached the maximum in-progress tasks (4)!'); window.history.back();</script>";
+    exit();
+}
 
 // Check if the task is a request or offer
 $task_details_query = "SELECT task_type, request_id, offer_id FROM tasks WHERE task_id = ?";
@@ -99,4 +119,4 @@ if ($update_task_stmt->affected_rows > 0) {
 
 header("Location: view_assigned_tasks.php");
 exit();
-?>
+

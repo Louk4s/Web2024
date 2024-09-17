@@ -9,6 +9,20 @@ include '../db_connect.php';
 
 $rescuer_id = $_SESSION['user_id'];
 
+// Count the rescuer's in-progress tasks (requests or offers)
+$sql_task_count = "
+    SELECT COUNT(*) AS in_progress_count
+    FROM tasks
+    WHERE status = 'in_progress' AND rescuer_id = ?
+";
+$stmt_task_count = $conn->prepare($sql_task_count);
+$stmt_task_count->bind_param('i', $rescuer_id);
+$stmt_task_count->execute();
+$result_task_count = $stmt_task_count->get_result();
+$in_progress_count = $result_task_count->fetch_assoc()['in_progress_count'];
+
+$stmt_task_count->close();
+
 // Fetch pending tasks that are not assigned to any rescuer
 $sql_pending = "
     SELECT 
@@ -170,7 +184,11 @@ $conn->close();
                     ?>
                 </td>
                 <td>
-                    <a href="accept_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Accept Task</a>
+                    <?php if ($in_progress_count < 4): ?>
+                        <a href="accept_task.php?task_id=<?php echo $task['task_id']; ?>" class="button">Accept Task</a>
+                    <?php else: ?>
+                        <p style="color: red;">You have reached the maximum in-progress tasks (4).</p>
+                    <?php endif; ?>
                 </td>
             </tr>
         <?php endforeach; ?>
